@@ -42,6 +42,45 @@ public class EtatCivil {
     @JoinColumn(name = "id_situation_familiale", nullable = false)
     private SitutationFamiliale situation_familiale;
 
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
+    public void setPrenom(String prenom) {
+        this.prenom = prenom;
+    }
+
+    public void setNom_jeune_fille(String nom_jeune_fille) {
+        this.nom_jeune_fille = nom_jeune_fille;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setNumero_telephone(String numero_telephone) {
+        this.numero_telephone = numero_telephone;
+    }
+
+    public void setDate_naissance(LocalDate date_naissance) {
+        this.date_naissance = date_naissance;
+    }
+
+    public void setLieu_naissance(String lieu_naissance) {
+        this.lieu_naissance = lieu_naissance;
+    }
+
+    public void setAdresse_mada(String adresse_mada) {
+        this.adresse_mada = adresse_mada;
+    }
+
+    public void setNationalite(Nationalite nationalite) {
+        this.nationalite = nationalite;
+    }
+
+    public void setSituation_familiale(SitutationFamiliale situation_familiale) {
+        this.situation_familiale = situation_familiale;
+    }
 
 
 }
