@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 package com.example.visa.model;
 
 import java.time.LocalDate;
@@ -7,7 +5,7 @@ import java.time.LocalDate;
 import jakarta.persistence.*;
 @Entity
 @Table(name = "passeport")
-public class Passeport {
+public class VisaTransformable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,4 +22,3 @@ public class Passeport {
 
     
 }
->>>>>>> Mir/back/feature/sprint/1/demande_visa
