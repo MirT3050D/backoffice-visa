@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 import jakarta.persistence.*;
 @Entity
-@Table(name = "passeport")
+@Table(name = "visa_transformable")
 public class VisaTransformable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,6 +18,10 @@ public class VisaTransformable {
 
     @Column(nullable = false, unique = false)
     private LocalDate date_delivrance;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_etat_civil", nullable = false)
+    private EtatCivil etatCivil;
 
 
     

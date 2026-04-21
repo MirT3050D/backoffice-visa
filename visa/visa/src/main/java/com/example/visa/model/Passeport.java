@@ -19,6 +19,11 @@ public class Passeport {
     @Column(nullable = false, unique = false)
     private LocalDate date_delivrance;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_etat_civil", nullable = false)
+    private EtatCivil etatCivil;
+
+
 
     
 }
