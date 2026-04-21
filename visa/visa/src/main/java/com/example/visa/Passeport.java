@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 package com.example.visa.model;
 
 import java.time.LocalDate;
@@ -24,4 +22,3 @@ public class Passeport {
 
     
 }
->>>>>>> Mir/back/feature/sprint/1/demande_visa
