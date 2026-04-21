@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import jakarta.persistence.*;
 @Entity
 @Table(name = "passeport")
-public class Passeport {
+public class VisaTransformable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
