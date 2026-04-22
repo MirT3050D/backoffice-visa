@@ -21,6 +21,16 @@ public class FrontController {
         return "index";
     }
 
+    @GetMapping("/creation")
+    public String creation() {
+        return "redirect:/";
+    }
+
+    @GetMapping("/list")
+    public String list() {
+        return "redirect:/demande-visa/visa-type";
+    }
+
     @GetMapping("/visa-demande")
     public String formdemande() {
         return "visa-demande";
