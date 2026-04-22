@@ -1,5 +1,6 @@
 package com.example.visa.service;
 import com.example.visa.dto.CreerDemandeVisaForm;
+import com.example.visa.dto.DemandeVisaEditForm;
 import com.example.visa.model.*;
 import com.example.visa.repository.*;
 import jakarta.transaction.Transactional;
@@ -9,6 +10,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -69,6 +71,10 @@ public class DemandeVisaService {
 	public List<SitutationFamiliale> getAllSituationsFamiliales() {
 		return situtationFamilialeRepository.findAll();
 	}
+
+	 public Optional<DemandeVisa> getDemandeById(Long id) {
+		 return demandeVisaRepository.findById(id);
+	 }
 
 	public Map<String, String[][]> construireChampsDynamiques(Long typeVisaId) {
 		List<ChampFournirCommune> champsCommuns = champFournirCommuneRepository.findAll();
@@ -187,5 +193,44 @@ public class DemandeVisaService {
 
 		return savedDemandeVisa;
 	}
+
+	 @Transactional
+	 public DemandeVisa updateDemandeVisa(Long id, DemandeVisaEditForm form) {
+		 DemandeVisa demande = demandeVisaRepository.findById(id)
+				 .orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+
+		 if (form.getDateDemande() != null) {
+			 demande.setDate_demande(form.getDateDemande());
+		 }
+
+		 Passeport passeport = demande.getPasseport();
+		 EtatCivil etatCivil = passeport.getEtatCivil();
+
+		 etatCivil.setNom(form.getNom());
+		 etatCivil.setPrenom(form.getPrenom());
+		 etatCivil.setEmail(form.getEmail());
+		 etatCivil.setNumero_telephone(form.getNumeroTelephone());
+
+		 passeport.setNumero_passport(form.getNumeroPasseport());
+		 if (form.getDateDelivrancePasseport() != null) {
+			 passeport.setDate_delivrance(form.getDateDelivrancePasseport());
+		 }
+		 if (form.getDateExpirationPasseport() != null) {
+			 passeport.setDate_expiration(form.getDateExpirationPasseport());
+		 }
+
+		 etatCivilRepository.save(etatCivil);
+		 passeportRepository.save(passeport);
+		 return demandeVisaRepository.save(demande);
+	 }
+
+	 @Transactional
+	 public void deleteDemandeVisa(Long id) {
+		 if (!demandeVisaRepository.existsById(id)) {
+			 throw new IllegalArgumentException("Demande introuvable");
+		 }
+		 dossierRepository.deleteByDemandeVisaId(id);
+		 demandeVisaRepository.deleteById(id);
+	 }
 
 }

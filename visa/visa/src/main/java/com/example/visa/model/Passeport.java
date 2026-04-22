@@ -23,6 +23,26 @@ public class Passeport {
     @JoinColumn(name = "id_etat_civil", nullable = false)
     private EtatCivil etatCivil;
 
+    public Long getId() {
+        return id;
+    }
+
+    public String getNumero_passport() {
+        return numero_passport;
+    }
+
+    public LocalDate getDate_expiration() {
+        return date_expiration;
+    }
+
+    public LocalDate getDate_delivrance() {
+        return date_delivrance;
+    }
+
+    public EtatCivil getEtatCivil() {
+        return etatCivil;
+    }
+
     public void setNumero_passport(String numero_passport) {
         this.numero_passport = numero_passport;
     }

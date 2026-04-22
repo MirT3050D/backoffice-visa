@@ -42,6 +42,50 @@ public class EtatCivil {
     @JoinColumn(name = "id_situation_familiale", nullable = false)
     private SitutationFamiliale situation_familiale;
 
+    public Long getId() {
+        return id;
+    }
+
+    public String getNom() {
+        return nom;
+    }
+
+    public String getPrenom() {
+        return prenom;
+    }
+
+    public String getNom_jeune_fille() {
+        return nom_jeune_fille;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getNumero_telephone() {
+        return numero_telephone;
+    }
+
+    public LocalDate getDate_naissance() {
+        return date_naissance;
+    }
+
+    public String getLieu_naissance() {
+        return lieu_naissance;
+    }
+
+    public String getAdresse_mada() {
+        return adresse_mada;
+    }
+
+    public Nationalite getNationalite() {
+        return nationalite;
+    }
+
+    public SitutationFamiliale getSituation_familiale() {
+        return situation_familiale;
+    }
+
     public void setNom(String nom) {
         this.nom = nom;
     }

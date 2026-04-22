@@ -25,6 +25,26 @@ public class DemandeVisa {
     @JoinColumn(name = "id_passeport", nullable = false)
     private Passeport passeport;
 
+    public Long getId() {
+        return id;
+    }
+
+    public LocalDate getDate_demande() {
+        return date_demande;
+    }
+
+    public TypeDemandeVisa getType_demande_visa() {
+        return type_demande_visa;
+    }
+
+    public TypeVisa getType_visa() {
+        return type_visa;
+    }
+
+    public Passeport getPasseport() {
+        return passeport;
+    }
+
     public void setDate_demande(LocalDate date_demande) {
         this.date_demande = date_demande;
     }

@@ -490,6 +490,235 @@ body {
 }
 
 /* ===================================
+   TABLEAU LISTE DEMANDES
+   =================================== */
+
+.table-wrapper {
+    width: 100%;
+    max-width: 980px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid #edf1f7;
+    text-align: left;
+}
+
+.data-table thead th {
+    background: #f1f5fc;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.data-table tbody tr:hover {
+    background: #f9fbff;
+}
+
+.clickable-row {
+    cursor: pointer;
+}
+
+.clickable-row:hover {
+    background: #f5f9ff;
+}
+
+.row-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.delete-form {
+    margin: 0;
+}
+
+.row-action {
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: transform 0.15s ease, background 0.2s ease;
+}
+
+button.row-action {
+    border: none;
+    cursor: pointer;
+    font: inherit;
+}
+
+.row-action svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.row-action:hover {
+    transform: translateY(-1px);
+}
+
+.row-action-edit {
+    color: var(--primary);
+    background: #eaf0fb;
+}
+
+.row-action-edit:hover {
+    background: #d9e6fb;
+}
+
+.row-action-delete {
+    color: #d32f2f;
+    background: #fdecec;
+}
+
+.row-action-delete:hover {
+    background: #fbd8d8;
+}
+
+.table-empty {
+    text-align: center !important;
+    color: #687385;
+    font-style: italic;
+}
+
+/* ===================================
+   PAGE DETAIL DEMANDE
+   =================================== */
+
+.detail-card {
+    width: 100%;
+    max-width: 980px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 1.4rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--info);
+}
+
+.detail-card h2 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.9rem;
+}
+
+.detail-item {
+    background: #f8fbff;
+    border: 1px solid #e9eff8;
+    border-radius: 6px;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.detail-item span {
+    color: #6f7f93;
+    font-size: 0.82rem;
+}
+
+.detail-item strong {
+    color: var(--dark);
+    font-size: 0.95rem;
+}
+
+.detail-actions {
+    width: 100%;
+    max-width: 980px;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+}
+
+.check-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.check-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    background: #f8fbff;
+    border: 1px solid #e9eff8;
+    border-radius: 6px;
+    padding: 0.65rem 0.8rem;
+}
+
+.check-label {
+    color: var(--dark);
+    font-weight: 600;
+}
+
+.check-badge {
+    border-radius: 999px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.check-badge.checked {
+    color: #1b7a3d;
+    background: #e6f6ec;
+    border: 1px solid #b8e3c8;
+}
+
+.check-badge.unchecked {
+    color: #9a5b00;
+    background: #fff4df;
+    border: 1px solid #ffd99a;
+}
+
+.check-empty {
+    color: #687385;
+    font-style: italic;
+}
+
+.flash-box {
+    width: 100%;
+    max-width: 980px;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.flash-success {
+    background: #eaf8ef;
+    color: #1f6f3b;
+    border: 1px solid #b8e5c7;
+}
+
+.flash-error {
+    background: #fdecec;
+    color: #9f1f1f;
+    border: 1px solid #f3b6b6;
+}
+
+/* ===================================
    FORMULAIRES
    =================================== */
 
