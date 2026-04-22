@@ -19,6 +19,7 @@
 
         <form id="visaForm" class="visa-form" method="POST" action="${pageContext.request.contextPath}/demande-visa/creer">
             <input type="hidden" name="typeVisaId" value="${typeVisaId}" />
+            <input type="hidden" name="typeDemandeId" value="${typeDemandeId}" />
             
             <!-- SECTION 1: ETAT CIVIL -->
             <div class="form-section">
@@ -34,7 +35,7 @@
                     </div>
                     <div class="form-group">
                         <label for="prenoms">Prénoms *</label>
-                        <input type="text" id="prenoms" name="prenoms" required>
+                        <input type="text" id="prenoms" name="prenom" required>
                     </div>
                 </div>
 
@@ -56,7 +57,12 @@
                     </div>
                     <div class="form-group">
                         <label for="nationaliteId">Nationalité *</label>
-                        <input type="number" id="nationaliteId" name="nationaliteId" placeholder="Ex: 1" required> <!-- Simplification -->
+                        <select id="nationaliteId" name="nationaliteId" required>
+                            <option value="">Sélectionner</option>
+                            <c:forEach var="na" items="${nationalites}">
+                                <option value="${na.id}">${na.label}</option>
+                            </c:forEach>
+                        </select>
                     </div>
                 </div>
 
@@ -67,7 +73,7 @@
                     </div>
                     <div class="form-group">
                         <label for="telephone">Numéro de Téléphone *</label>
-                        <input type="tel" id="telephone" name="telephone" required>
+                        <input type="tel" id="telephone" name="numeroTelephone" required>
                     </div>
                 </div>
 
@@ -81,7 +87,12 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="situationFamilialeId">Situation Familiale *</label>
-                        <input type="number" id="situationFamilialeId" name="situationFamilialeId" placeholder="Ex: 1" required> <!-- Simplification -->
+                        <select id="situationFamilialeId" name="situationFamilialeId" required>
+                            <option value="">Sélectionner</option>
+                            <c:forEach var="sit" items="${situationsFamiliales}">
+                                <option value="${sit.id}">${sit.label}</option>
+                            </c:forEach>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -96,18 +107,18 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="numPasseport">Numéro de Passeport *</label>
-                        <input type="text" id="numPasseport" name="numPasseport" required>
+                        <input type="text" id="numPasseport" name="numeroPasseport" required>
                     </div>
                     <div class="form-group">
                         <label for="dateDelivrance">Date de Délivrance *</label>
-                        <input type="date" id="dateDelivrance" name="dateDelivrance" required>
+                        <input type="date" id="dateDelivrance" name="dateDelivrancePasseport" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="dateExpiration">Date d'Expiration *</label>
-                        <input type="date" id="dateExpiration" name="dateExpiration" required>
+                        <input type="date" id="dateExpiration" name="dateExpirationPasseport" required>
                     </div>
                 </div>
             </div>
@@ -145,16 +156,16 @@
                     Champs Communs
                 </h2>
 
-                <c:forEach var="champ" items="${champsCommuns}">
-                    <div class="form-row">
-                        <div class="form-group checkbox-group full-width">
-                            <input type="checkbox" id="commune_${champ.id}" name="champCommune_${champ.id}">
-                            <label for="commune_${champ.id}">
+                <div class="form-row checkbox-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <c:forEach var="champ" items="${champsCommuns}">
+                        <div class="form-group checkbox-group" style="margin-bottom: 0; display: flex; align-items: center; flex-direction: row; gap: 10px;">
+                            <input type="checkbox" id="commune_${champ.id}" name="champCommune_${champ.id}" style="width: auto; margin: 0;">
+                            <label for="commune_${champ.id}" style="margin: 0; font-weight: normal; cursor: pointer;">
                                 <c:out value="${champ.label}" />
                             </label>
                         </div>
-                    </div>
-                </c:forEach>
+                    </c:forEach>
+                </div>
             </div>
 
             <!-- SECTION 5: CHAMPS SPECIFIQUES (DOSSIER) -->
@@ -164,16 +175,16 @@
                     Champs Spécifiques
                 </h2>
 
-                <c:forEach var="champ" items="${champsSpecifiques}">
-                    <div class="form-row">
-                        <div class="form-group checkbox-group full-width">
-                            <input type="checkbox" id="specifique_${champ.id}" name="champSpecifique_${champ.id}">
-                            <label for="specifique_${champ.id}">
+                <div class="form-row checkbox-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <c:forEach var="champ" items="${champsSpecifiques}">
+                        <div class="form-group checkbox-group" style="margin-bottom: 0; display: flex; align-items: center; flex-direction: row; gap: 10px;">
+                            <input type="checkbox" id="specifique_${champ.id}" name="champSpecifique_${champ.id}" style="width: auto; margin: 0;">
+                            <label for="specifique_${champ.id}" style="margin: 0; font-weight: normal; cursor: pointer;">
                                 <c:out value="${champ.label}" />
                             </label>
                         </div>
-                    </div>
-                </c:forEach>
+                    </c:forEach>
+                </div>
             </div>
 
             <!-- SECTION 6: ACCORD ET SOUMISSION -->

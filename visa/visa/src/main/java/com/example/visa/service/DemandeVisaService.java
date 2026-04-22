@@ -54,6 +54,14 @@ public class DemandeVisaService {
 		return champFournirSpecifiqueRepository.findByTypeVisaId(typeVisaId);
 	}
 
+	public List<Nationalite> getAllNationalites() {
+		return nationaliteRepository.findAll();
+	}
+
+	public List<SitutationFamiliale> getAllSituationsFamiliales() {
+		return situtationFamilialeRepository.findAll();
+	}
+
 	public Map<String, String[][]> construireChampsDynamiques(Long typeVisaId) {
 		List<ChampFournirCommune> champsCommuns = champFournirCommuneRepository.findAll();
 		List<ChampFournirSpecifique> champsSpecifiques = champFournirSpecifiqueRepository.findByTypeVisaId(typeVisaId);
@@ -100,7 +108,7 @@ public class DemandeVisaService {
 		SitutationFamiliale situationFamiliale = situtationFamilialeRepository.findById(form.getSituationFamilialeId())
 				.orElseThrow(() -> new IllegalArgumentException("Situation familiale introuvable"));
 
-		TypeDemandeVisa typeDemandeVisa = typeDemandeVisaRepository.findById(form.getTypeDemandeVisaId())
+		TypeDemandeVisa typeDemandeVisa = typeDemandeVisaRepository.findById(form.getTypeDemandeId())
 				.orElseThrow(() -> new IllegalArgumentException("Type de demande introuvable"));
 
 		TypeVisa typeVisa = typeVisaRepository.findById(form.getTypeVisaId())

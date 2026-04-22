@@ -52,10 +52,55 @@ public class CreerDemandeVisaForm {
     private LocalDate dateExpirationPasseport;
 
     @NotNull
-    private Long typeDemandeVisaId;
+    private Long typeDemandeId;
 
     @NotNull
     private Long typeVisaId;
+
+    @NotBlank
+    private String visaTranNumPasseport;
+
+    @NotNull
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate visaTranDateDelivrance;
+
+    @NotNull
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate visaTranDateExpiration;
+
+    private java.util.List<Long> champsSpecifiquesCoches;
+
+    public String getVisaTranNumPasseport() {
+        return visaTranNumPasseport;
+    }
+
+    public void setVisaTranNumPasseport(String visaTranNumPasseport) {
+        this.visaTranNumPasseport = visaTranNumPasseport;
+    }
+
+    public LocalDate getVisaTranDateDelivrance() {
+        return visaTranDateDelivrance;
+    }
+
+    public void setVisaTranDateDelivrance(LocalDate visaTranDateDelivrance) {
+        this.visaTranDateDelivrance = visaTranDateDelivrance;
+    }
+
+    public LocalDate getVisaTranDateExpiration() {
+        return visaTranDateExpiration;
+    }
+
+    public void setVisaTranDateExpiration(LocalDate visaTranDateExpiration) {
+        this.visaTranDateExpiration = visaTranDateExpiration;
+    }
+
+    public java.util.List<Long> getChampsSpecifiquesCoches() {
+        return champsSpecifiquesCoches;
+    }
+
+    public void setChampsSpecifiquesCoches(java.util.List<Long> champsSpecifiquesCoches) {
+        this.champsSpecifiquesCoches = champsSpecifiquesCoches;
+    }
 
     public LocalDate getDateDemande() {
         return dateDemande;
@@ -169,12 +214,12 @@ public class CreerDemandeVisaForm {
         this.dateExpirationPasseport = dateExpirationPasseport;
     }
 
-    public Long getTypeDemandeVisaId() {
-        return typeDemandeVisaId;
+    public Long getTypeDemandeId() {
+        return typeDemandeId;
     }
 
-    public void setTypeDemandeVisaId(Long typeDemandeVisaId) {
-        this.typeDemandeVisaId = typeDemandeVisaId;
+    public void setTypeDemandeId(Long typeDemandeId) {
+        this.typeDemandeId = typeDemandeId;
     }
 
     public Long getTypeVisaId() {

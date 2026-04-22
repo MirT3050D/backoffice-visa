@@ -30,7 +30,7 @@
                         <p>Champs adaptes automatiquement selon ce type de visa</p>
                     </div>
                     <div class="card-footer">
-                        <a href="${pageContext.request.contextPath}/demande-visa/visa-form?typeVisaId=${typeVisa.id}" class="btn btn-primary">Continuer</a>
+                        <a href="${pageContext.request.contextPath}/demande-visa/visa-form?typeVisaId=${typeVisa.id}&type_demande_id=${typeDemandeId}" class="btn btn-primary">Continuer</a>
                     </div>
                 </div>
             </c:forEach>

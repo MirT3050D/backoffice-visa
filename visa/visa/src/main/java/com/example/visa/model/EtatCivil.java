@@ -25,13 +25,13 @@ public class EtatCivil {
     @Column(unique = true, nullable = false, length = 50)
     private String numero_telephone;
 
-    @Column(unique = true, nullable = false, length = 150)
+    @Column(unique = false, nullable = false, length = 150)
     private LocalDate date_naissance;   
 
-    @Column(unique = true, nullable = false, length = 150)
+    @Column(unique = false, nullable = false, length = 150)
     private String lieu_naissance;
 
-    @Column(unique = true, nullable = false, length = 150)
+    @Column(unique = false, nullable = false, length = 150)
     private String adresse_mada;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -1,6 +1,7 @@
 package com.example.visa.controller;
 
 import com.example.visa.dto.CreerDemandeVisaForm;
+import com.example.visa.model.Nationalite;
 import com.example.visa.service.DemandeVisaService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -26,16 +27,20 @@ public class DemandeVisaController {
     }
 
     @GetMapping("/visa-type")
-    public String typeVisa(Model model) {
+    public String typeVisa(@RequestParam(value = "type_demande_id", required = false) Long typeDemandeId, Model model) {
         model.addAttribute("typesVisa", demandeVisaService.getAllTypesVisa());
+        model.addAttribute("typeDemandeId", typeDemandeId);
         return "visa-type";
     }
 
     @GetMapping("/visa-form")
-    public String visaForm(@RequestParam("typeVisaId") Long typeVisaId, Model model) {
+    public String visaForm(@RequestParam("typeVisaId") Long typeVisaId, @RequestParam(value = "type_demande_id", required = false) Long typeDemandeId, Model model) {
         model.addAttribute("typeVisaId", typeVisaId);
+        model.addAttribute("typeDemandeId", typeDemandeId);
         model.addAttribute("champsCommuns", demandeVisaService.getChampsCommuns());
         model.addAttribute("champsSpecifiques", demandeVisaService.getChampsSpecifiques(typeVisaId));
+        model.addAttribute("nationalites", demandeVisaService.getAllNationalites());
+        model.addAttribute("situationsFamiliales", demandeVisaService.getAllSituationsFamiliales());    
         return "visa-form-a-remplir";
     }
 
@@ -52,20 +57,32 @@ public class DemandeVisaController {
 
     @PostMapping("/creer")
     public String enregistrerDemandeVisa(
-            @Valid @ModelAttribute("form") CreerDemandeVisaForm form,
-            BindingResult bindingResult,
+            @ModelAttribute("form") CreerDemandeVisaForm form,
             RedirectAttributes redirectAttributes) {
-        if (bindingResult.hasErrors()) {
-            return "creer_demande_visa";
+
+        // 2. Définir explicitement la date de demande à aujourd'hui
+        if (form.getDateDemande() == null) {
+            form.setDateDemande(java.time.LocalDate.now());
         }
 
+        System.out.println("--- DEBUT POST /demande-visa/creer ---");
+        System.out.println("Type Visa ID: " + form.getTypeVisaId());
+        System.out.println("Type Demande Visa ID: " + form.getTypeDemandeId());
+        System.out.println("Nom: " + form.getNom() + " | Prenom: " + form.getPrenom());
+        
         try {
+            System.out.println("-> Appel de demandeVisaService.creerDemandeVisa()");
             demandeVisaService.creerDemandeVisa(form);
+            System.out.println("-> Succes : Demande de visa creee en base de donnees.");
             redirectAttributes.addFlashAttribute("successMessage", "Demande de visa creee avec succes");
             return "redirect:/demande-visa/creer";
         } catch (IllegalArgumentException e) {
-            bindingResult.reject("creation.error", e.getMessage());
+            System.out.println("-> ERREUR (IllegalArgumentException) : " + e.getMessage());
             return "creer_demande_visa";
+        } catch (Exception e) {
+            System.out.println("-> ERREUR INATTENDUE : " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
     }
     
