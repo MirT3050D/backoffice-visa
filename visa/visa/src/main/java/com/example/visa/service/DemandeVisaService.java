@@ -1,13 +1,13 @@
 package com.example.visa.service;
+import com.example.visa.dto.CreerDemandeVisaForm;
 import com.example.visa.model.*;
 import com.example.visa.repository.*;
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class DemandeVisaService {
@@ -18,6 +18,8 @@ public class DemandeVisaService {
 	private final SitutationFamilialeRepository situtationFamilialeRepository;
 	private final TypeDemandeVisaRepository typeDemandeVisaRepository;
 	private final TypeVisaRepository typeVisaRepository;
+	private final ChampFournirCommuneRepository champFournirCommuneRepository;
+	private final ChampFournirSpecifiqueRepository champFournirSpecifiqueRepository;
 
 	public DemandeVisaService(
 			DemandeVisaRepository demandeVisaRepository,
@@ -26,7 +28,9 @@ public class DemandeVisaService {
 			NationaliteRepository nationaliteRepository,
 			SitutationFamilialeRepository situtationFamilialeRepository,
 			TypeDemandeVisaRepository typeDemandeVisaRepository,
-			TypeVisaRepository typeVisaRepository) {
+			TypeVisaRepository typeVisaRepository,
+			ChampFournirCommuneRepository champFournirCommuneRepository,
+			ChampFournirSpecifiqueRepository champFournirSpecifiqueRepository) {
 		this.demandeVisaRepository = demandeVisaRepository;
 		this.etatCivilRepository = etatCivilRepository;
 		this.passeportRepository = passeportRepository;
@@ -34,6 +38,58 @@ public class DemandeVisaService {
 		this.situtationFamilialeRepository = situtationFamilialeRepository;
 		this.typeDemandeVisaRepository = typeDemandeVisaRepository;
 		this.typeVisaRepository = typeVisaRepository;
+		this.champFournirCommuneRepository = champFournirCommuneRepository;
+		this.champFournirSpecifiqueRepository = champFournirSpecifiqueRepository;
+	}
+
+	public List<TypeVisa> getAllTypesVisa() {
+		return typeVisaRepository.findAll();
+	}
+
+	public List<ChampFournirCommune> getChampsCommuns() {
+		return champFournirCommuneRepository.findAll();
+	}
+
+	public List<ChampFournirSpecifique> getChampsSpecifiques(Long typeVisaId) {
+		return champFournirSpecifiqueRepository.findByTypeVisaId(typeVisaId);
+	}
+
+	public Map<String, String[][]> construireChampsDynamiques(Long typeVisaId) {
+		List<ChampFournirCommune> champsCommuns = champFournirCommuneRepository.findAll();
+		List<ChampFournirSpecifique> champsSpecifiques = champFournirSpecifiqueRepository.findByTypeVisaId(typeVisaId);
+
+		Map<String, String[][]> map = new LinkedHashMap<>();
+		map.put("Champs Communs", convertirCommuns(champsCommuns));
+		map.put("Champs Specifiques", convertirSpecifiques(champsSpecifiques));
+		map.put("Dossier", convertirDossier(champsSpecifiques));
+		return map;
+	}
+
+	private String[][] convertirCommuns(List<ChampFournirCommune> champs) {
+		String[][] resultat = new String[champs.size()][2];
+		for (int i = 0; i < champs.size(); i++) {
+			resultat[i][0] = champs.get(i).getLabel();
+			resultat[i][1] = champs.get(i).getTypeDonnee();
+		}
+		return resultat;
+	}
+
+	private String[][] convertirSpecifiques(List<ChampFournirSpecifique> champs) {
+		String[][] resultat = new String[champs.size()][2];
+		for (int i = 0; i < champs.size(); i++) {
+			resultat[i][0] = champs.get(i).getLabel();
+			resultat[i][1] = champs.get(i).getTypeDonnee();
+		}
+		return resultat;
+	}
+
+	private String[][] convertirDossier(List<ChampFournirSpecifique> champsSpecifiques) {
+		String[][] resultat = new String[champsSpecifiques.size()][2];
+		for (int i = 0; i < champsSpecifiques.size(); i++) {
+			resultat[i][0] = champsSpecifiques.get(i).getLabel();
+			resultat[i][1] = "boolean";
+		}
+		return resultat;
 	}
 
 	@Transactional
@@ -77,186 +133,6 @@ public class DemandeVisaService {
 		demandeVisa.setPasseport(savedPasseport);
 
 		return demandeVisaRepository.save(demandeVisa);
-	}
-
-	public static class CreerDemandeVisaForm {
-		@NotNull
-		@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-		private LocalDate dateDemande;
-
-		@NotBlank
-		private String nom;
-
-		@NotBlank
-		private String prenom;
-
-		private String nomJeuneFille;
-
-		private String email;
-
-		@NotBlank
-		private String numeroTelephone;
-
-		@NotNull
-		@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-		private LocalDate dateNaissance;
-
-		@NotBlank
-		private String lieuNaissance;
-
-		@NotBlank
-		private String adresseMada;
-
-		@NotNull
-		private Long nationaliteId;
-
-		@NotNull
-		private Long situationFamilialeId;
-
-		@NotBlank
-		private String numeroPasseport;
-
-		@NotNull
-		@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-		private LocalDate dateDelivrancePasseport;
-
-		@NotNull
-		@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-		private LocalDate dateExpirationPasseport;
-
-		@NotNull
-		private Long typeDemandeVisaId;
-
-		@NotNull
-		private Long typeVisaId;
-
-		public LocalDate getDateDemande() {
-			return dateDemande;
-		}
-
-		public void setDateDemande(LocalDate dateDemande) {
-			this.dateDemande = dateDemande;
-		}
-
-		public String getNom() {
-			return nom;
-		}
-
-		public void setNom(String nom) {
-			this.nom = nom;
-		}
-
-		public String getPrenom() {
-			return prenom;
-		}
-
-		public void setPrenom(String prenom) {
-			this.prenom = prenom;
-		}
-
-		public String getNomJeuneFille() {
-			return nomJeuneFille;
-		}
-
-		public void setNomJeuneFille(String nomJeuneFille) {
-			this.nomJeuneFille = nomJeuneFille;
-		}
-
-		public String getEmail() {
-			return email;
-		}
-
-		public void setEmail(String email) {
-			this.email = email;
-		}
-
-		public String getNumeroTelephone() {
-			return numeroTelephone;
-		}
-
-		public void setNumeroTelephone(String numeroTelephone) {
-			this.numeroTelephone = numeroTelephone;
-		}
-
-		public LocalDate getDateNaissance() {
-			return dateNaissance;
-		}
-
-		public void setDateNaissance(LocalDate dateNaissance) {
-			this.dateNaissance = dateNaissance;
-		}
-
-		public String getLieuNaissance() {
-			return lieuNaissance;
-		}
-
-		public void setLieuNaissance(String lieuNaissance) {
-			this.lieuNaissance = lieuNaissance;
-		}
-
-		public String getAdresseMada() {
-			return adresseMada;
-		}
-
-		public void setAdresseMada(String adresseMada) {
-			this.adresseMada = adresseMada;
-		}
-
-		public Long getNationaliteId() {
-			return nationaliteId;
-		}
-
-		public void setNationaliteId(Long nationaliteId) {
-			this.nationaliteId = nationaliteId;
-		}
-
-		public Long getSituationFamilialeId() {
-			return situationFamilialeId;
-		}
-
-		public void setSituationFamilialeId(Long situationFamilialeId) {
-			this.situationFamilialeId = situationFamilialeId;
-		}
-
-		public String getNumeroPasseport() {
-			return numeroPasseport;
-		}
-
-		public void setNumeroPasseport(String numeroPasseport) {
-			this.numeroPasseport = numeroPasseport;
-		}
-
-		public LocalDate getDateDelivrancePasseport() {
-			return dateDelivrancePasseport;
-		}
-
-		public void setDateDelivrancePasseport(LocalDate dateDelivrancePasseport) {
-			this.dateDelivrancePasseport = dateDelivrancePasseport;
-		}
-
-		public LocalDate getDateExpirationPasseport() {
-			return dateExpirationPasseport;
-		}
-
-		public void setDateExpirationPasseport(LocalDate dateExpirationPasseport) {
-			this.dateExpirationPasseport = dateExpirationPasseport;
-		}
-
-		public Long getTypeDemandeVisaId() {
-			return typeDemandeVisaId;
-		}
-
-		public void setTypeDemandeVisaId(Long typeDemandeVisaId) {
-			this.typeDemandeVisaId = typeDemandeVisaId;
-		}
-
-		public Long getTypeVisaId() {
-			return typeVisaId;
-		}
-
-		public void setTypeVisaId(Long typeVisaId) {
-			this.typeVisaId = typeVisaId;
-		}
 	}
 
 }

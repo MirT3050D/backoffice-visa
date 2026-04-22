@@ -1,10 +1,11 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+﻿<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visa Travailleur - Formulaire de Demande</title>
+    <title>Visa - Formulaire de Demande</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 </head>
 <body>
@@ -12,34 +13,35 @@
 
     <div class="container">
         <div class="form-header">
-            <h1>Demande de Visa Travailleur</h1>
+            <h1>Demande de Visa</h1>
             <p class="progress-indicator">Etape 2/3 : Formulaire de Demande</p>
         </div>
 
-        <form id="visaTravailleurForm" class="visa-form" method="POST" action="visa-recap">
+        <form id="visaForm" class="visa-form" method="POST" action="${pageContext.request.contextPath}/demande-visa/creer">
+            <input type="hidden" name="typeVisaId" value="${typeVisaId}" />
             
-            <!-- SECTION 1: INFORMATIONS PERSONNELLES -->
+            <!-- SECTION 1: ETAT CIVIL -->
             <div class="form-section">
                 <h2 class="section-title">
                     <span class="section-icon">[IDENTITE]</span>
-                    Informations Personnelles
+                    Etat Civil
                 </h2>
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="nom">Nom *</label>
-                        <input type="text" id="nom" name="nom" placeholder="Ex: DUPONT" required>
+                        <input type="text" id="nom" name="nom" required>
                     </div>
                     <div class="form-group">
                         <label for="prenoms">Prénoms *</label>
-                        <input type="text" id="prenoms" name="prenoms" placeholder="Ex: Jean" required>
+                        <input type="text" id="prenoms" name="prenoms" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="nomJeuneFille">Nom de Jeune Fille</label>
-                        <input type="text" id="nomJeuneFille" name="nomJeuneFille" placeholder="Si applicable">
+                        <input type="text" id="nomJeuneFille" name="nomJeuneFille">
                     </div>
                     <div class="form-group">
                         <label for="dateNaissance">Date de Naissance *</label>
@@ -50,55 +52,41 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="lieuNaissance">Lieu de Naissance *</label>
-                        <input type="text" id="lieuNaissance" name="lieuNaissance" placeholder="Ex: Paris" required>
+                        <input type="text" id="lieuNaissance" name="lieuNaissance" required>
                     </div>
                     <div class="form-group">
-                        <label for="nationalite">Nationalité *</label>
-                        <select id="nationalite" name="nationalite" required>
-                            <option value="">--Sélectionner--</option>
-                            <option value="francais">Français</option>
-                            <option value="belge">Belge</option>
-                            <option value="suisse">Suisse</option>
-                            <option value="canadien">Canadien</option>
-                            <option value="autre">Autre</option>
-                        </select>
+                        <label for="nationaliteId">Nationalité *</label>
+                        <input type="number" id="nationaliteId" name="nationaliteId" placeholder="Ex: 1" required> <!-- Simplification -->
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="email">Adresse Email *</label>
-                        <input type="email" id="email" name="email" placeholder="exemple@email.com" required>
+                        <input type="email" id="email" name="email" required>
                     </div>
                     <div class="form-group">
                         <label for="telephone">Numéro de Téléphone *</label>
-                        <input type="tel" id="telephone" name="telephone" placeholder="+33 6 XX XX XX XX" required>
+                        <input type="tel" id="telephone" name="telephone" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group full-width">
-                        <label for="adresse">Adresse de Résidence *</label>
-                        <input type="text" id="adresse" name="adresse" placeholder="Ex: 123 Rue de la Paix, 75000 Paris" required>
+                        <label for="adresseMada">Adresse à Madagascar *</label>
+                        <input type="text" id="adresseMada" name="adresseMada" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="situationFamiliale">Situation Familiale *</label>
-                        <select id="situationFamiliale" name="situationFamiliale" required>
-                            <option value="">--Sélectionner--</option>
-                            <option value="celibataire">Célibataire</option>
-                            <option value="marie">Marié(e)</option>
-                            <option value="divorce">Divorcé(e)</option>
-                            <option value="veuf">Veuf/Veuve</option>
-                            <option value="pacs">Pacsé(e)</option>
-                        </select>
+                        <label for="situationFamilialeId">Situation Familiale *</label>
+                        <input type="number" id="situationFamilialeId" name="situationFamilialeId" placeholder="Ex: 1" required> <!-- Simplification -->
                     </div>
                 </div>
             </div>
 
-            <!-- SECTION 2: INFORMATIONS PASSEPORT -->
+            <!-- SECTION 2: PASSEPORT -->
             <div class="form-section">
                 <h2 class="section-title">
                     <span class="section-icon">[DOCUMENT]</span>
@@ -108,7 +96,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="numPasseport">Numéro de Passeport *</label>
-                        <input type="text" id="numPasseport" name="numPasseport" placeholder="Ex: AB123456" required>
+                        <input type="text" id="numPasseport" name="numPasseport" required>
                     </div>
                     <div class="form-group">
                         <label for="dateDelivrance">Date de Délivrance *</label>
@@ -124,181 +112,71 @@
                 </div>
             </div>
 
-            <!-- SECTION 3: INFORMATIONS PROFESSIONNELLES SPECIFIQUES AU VISA TRAVAILLEUR -->
+            <!-- SECTION 3: VISA TRANSFORMABLE -->
             <div class="form-section">
                 <h2 class="section-title">
-                    <span class="section-icon">[TRAVAIL]</span>
-                    Informations Professionnelles
+                    <span class="section-icon">[VISA]</span>
+                    Visa Transformable
                 </h2>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="poste">Poste Proposé *</label>
-                        <input type="text" id="poste" name="poste" placeholder="Ex: Ingénieur Informatique" required>
+                        <label for="visaTranNumPasseport">Numéro de Passeport (Visa) *</label>
+                        <input type="text" id="visaTranNumPasseport" name="visaTranNumPasseport" required>
                     </div>
                     <div class="form-group">
-                        <label for="secteurActivite">Secteur d'Activité *</label>
-                        <select id="secteurActivite" name="secteurActivite" required>
-                            <option value="">--Sélectionner--</option>
-                            <option value="informatique">Informatique</option>
-                            <option value="sante">Santé</option>
-                            <option value="construction">Construction</option>
-                            <option value="education">Éducation</option>
-                            <option value="commerce">Commerce</option>
-                            <option value="autre">Autre</option>
-                        </select>
+                        <label for="visaTranDateDelivrance">Date de Délivrance *</label>
+                        <input type="date" id="visaTranDateDelivrance" name="visaTranDateDelivrance" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="entreprise">Nom de l'Entreprise *</label>
-                        <input type="text" id="entreprise" name="entreprise" placeholder="Ex: Société XYZ SARL" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="ville">Ville de Travail *</label>
-                        <select id="ville" name="ville" required>
-                            <option value="">--Sélectionner--</option>
-                            <option value="paris">Paris</option>
-                            <option value="lyon">Lyon</option>
-                            <option value="marseille">Marseille</option>
-                            <option value="toulouse">Toulouse</option>
-                            <option value="nice">Nice</option>
-                            <option value="autre">Autre</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <label for="adresseEntreprise">Adresse de l'Entreprise *</label>
-                        <input type="text" id="adresseEntreprise" name="adresseEntreprise" placeholder="Ex: 456 Avenue de la République, 75011 Paris" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="dateDebut">Date de Début d'Emploi *</label>
-                        <input type="date" id="dateDebut" name="dateDebut" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="salaire">Salaire Proposé (EUR) *</label>
-                        <input type="number" id="salaire" name="salaire" placeholder="Ex: 35000" min="0" step="0.01" required>
+                        <label for="visaTranDateExpiration">Date d'Expiration *</label>
+                        <input type="date" id="visaTranDateExpiration" name="visaTranDateExpiration" required>
                     </div>
                 </div>
             </div>
 
-            <!-- SECTION 4: DIPLOMES ET QUALIFICATIONS -->
+            <!-- SECTION 4: CHAMPS COMMUNS (DOSSIER) -->
             <div class="form-section">
                 <h2 class="section-title">
-                    <span class="section-icon">[EDUCATION]</span>
-                    Diplômes et Qualifications
+                    <span class="section-icon">[DOSSIER]</span>
+                    Champs Communs
                 </h2>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="niveauEtude">Niveau d'Étude Maximal *</label>
-                        <select id="niveauEtude" name="niveauEtude" required>
-                            <option value="">--Sélectionner--</option>
-                            <option value="bac">Baccalauréat</option>
-                            <option value="licence">Licence (Bac+3)</option>
-                            <option value="master">Master (Bac+5)</option>
-                            <option value="doctorat">Doctorat (Bac+8)</option>
-                            <option value="autre">Autre</option>
-                        </select>
+                <c:forEach var="champ" items="${champsCommuns}">
+                    <div class="form-row">
+                        <div class="form-group checkbox-group full-width">
+                            <input type="checkbox" id="commune_${champ.id}" name="champCommune_${champ.id}">
+                            <label for="commune_${champ.id}">
+                                <c:out value="${champ.label}" />
+                            </label>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="diplome">Diplôme Principal *</label>
-                        <input type="text" id="diplome" name="diplome" placeholder="Ex: Master Informatique" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <label for="experience">Expérience Professionnelle (en années) *</label>
-                        <input type="number" id="experience" name="experience" placeholder="Ex: 5" min="0" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <label for="competences">Compétences Particulières</label>
-                        <textarea id="competences" name="competences" placeholder="Décrivez vos compétences pertinentes pour le poste..." rows="4"></textarea>
-                    </div>
-                </div>
+                </c:forEach>
             </div>
 
-            <!-- SECTION 5: VISITE MEDICALE -->
+            <!-- SECTION 5: CHAMPS SPECIFIQUES (DOSSIER) -->
             <div class="form-section">
                 <h2 class="section-title">
-                    <span class="section-icon">[SANTE]</span>
-                    Visite Médicale
+                    <span class="section-icon">[DOSSIER SPECIFIQUE]</span>
+                    Champs Spécifiques
                 </h2>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="visite">Visite Médicale Effectuée *</label>
-                        <select id="visite" name="visite" required>
-                            <option value="">--Sélectionner--</option>
-                            <option value="oui">Oui</option>
-                            <option value="non">Non</option>
-                        </select>
+                <c:forEach var="champ" items="${champsSpecifiques}">
+                    <div class="form-row">
+                        <div class="form-group checkbox-group full-width">
+                            <input type="checkbox" id="specifique_${champ.id}" name="champSpecifique_${champ.id}">
+                            <label for="specifique_${champ.id}">
+                                <c:out value="${champ.label}" />
+                            </label>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="dateVisite">Date de Visite (si applicable)</label>
-                        <input type="date" id="dateVisite" name="dateVisite">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <label for="problemesSante">Problèmes de Santé Particuliers</label>
-                        <textarea id="problemesSante" name="problemesSante" placeholder="Décrivez tout problème pertinent..." rows="3"></textarea>
-                    </div>
-                </div>
+                </c:forEach>
             </div>
 
-            <!-- SECTION 6: DOCUMENTS JOINTS -->
-            <div class="form-section">
-                <h2 class="section-title">
-                    <span class="section-icon">[FICHIERS]</span>
-                    Documents Joints
-                </h2>
-
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <label for="contratTravail">Contrat de Travail *</label>
-                        <input type="file" id="contratTravail" name="contratTravail" accept=".pdf,.doc,.docx" required>
-                        <small>Format: PDF, DOC, DOCX (Max 5 MB)</small>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <label for="certificatDiplome">Certificat(s) de Diplôme *</label>
-                        <input type="file" id="certificatDiplome" name="certificatDiplome" accept=".pdf,.jpg,.png" required>
-                        <small>Format: PDF, JPG, PNG (Max 5 MB)</small>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <label for="rapportMedical">Rapport Médical</label>
-                        <input type="file" id="rapportMedical" name="rapportMedical" accept=".pdf,.jpg,.png">
-                        <small>Format: PDF, JPG, PNG (Max 5 MB)</small>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <label for="autresDocuments">Autres Documents Justificatifs</label>
-                        <input type="file" id="autresDocuments" name="autresDocuments" accept=".pdf,.jpg,.png,.doc,.docx" multiple>
-                        <small>Format: PDF, JPG, PNG, DOC, DOCX (Max 5 MB par fichier)</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION 7: ACCORD ET SOUMISSION -->
+            <!-- SECTION 6: ACCORD ET SOUMISSION -->
             <div class="form-section">
                 <h2 class="section-title">
                     <span class="section-icon">[CONFIRMATION]</span>
@@ -313,29 +191,11 @@
                         </label>
                     </div>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group checkbox-group full-width">
-                        <input type="checkbox" id="autorite" name="autorite" required>
-                        <label for="autorite">
-                            Je reconnais avoir volontairement fourni ces informations aux autorités compétentes*
-                        </label>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group checkbox-group full-width">
-                        <input type="checkbox" id="conditions" name="conditions" required>
-                        <label for="conditions">
-                            J'accepte les conditions d'utilisation et la politique de confidentialité *
-                        </label>
-                    </div>
-                </div>
             </div>
 
             <!-- Boutons de Navigation -->
             <div class="form-navigation">
-                <a href="type-visa" class="btn btn-secondary">Retour</a>
+                <a href="${pageContext.request.contextPath}/demande-visa/visa-type" class="btn btn-secondary">Retour</a>
                 <button type="submit" class="btn btn-primary">Soumettre la Demande</button>
             </div>
         </form>
@@ -344,9 +204,8 @@
     <jsp:include page="components/footer.jsp" />
 
     <script>
-        document.getElementById('visaTravailleurForm').addEventListener('submit', function(e) {
-            // Validation supplémentaire si nécessaire
-            console.log('Formulaire Visa Travailleur soumis');
+        document.getElementById('visaForm').addEventListener('submit', function(e) {
+            console.log('Formulaire soumis');
         });
     </script>
 </body>

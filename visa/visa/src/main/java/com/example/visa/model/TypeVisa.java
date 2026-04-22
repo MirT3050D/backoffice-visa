@@ -12,4 +12,16 @@ public class TypeVisa {
     @Column(nullable = false, length = 200)
     private String label;
 
+    public Long getId() {
+        return id;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
 }

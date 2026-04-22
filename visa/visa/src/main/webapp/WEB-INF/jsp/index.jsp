@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -17,53 +18,22 @@
         </div>
 
         <div class="cards-grid">
-            <!-- Card: Demande de Visa -->
-            <div class="card">
-                <div class="card-header bg-primary">
-                    <svg class="card-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
-                    </svg>
+            <c:forEach var="typeDemande" items="${typeDemandes}">
+                <div class="card">
+                    <div class="card-header bg-primary">
+                        <svg class="card-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                        </svg>
+                    </div>
+                    <div class="card-body">
+                        <h2>${typeDemande.label}</h2>
+                        <p>Faire une demande de type ${typeDemande.label}</p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="${pageContext.request.contextPath}/demande-visa/visa-type?type_demande_id=${typeDemande.id}" class="btn btn-primary">Commencer</a>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <h2>Demande de Visa</h2>
-                    <p>Soumettre une nouvelle demande de visa de sejour</p>
-                </div>
-                <div class="card-footer">
-                    <a href="visa-type" class="btn btn-primary">Commencer</a>
-                </div>
-            </div>
-
-            <!-- Card: Demande Visa Long Sejour -->
-            <div class="card">
-                <div class="card-header bg-accent">
-                    <svg class="card-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
-                    </svg>
-                </div>
-                <div class="card-body">
-                    <h2>Visa Long Sejour</h2>
-                    <p>Demande pour un sejour superieur a 90 jours</p>
-                </div>
-                <div class="card-footer">
-                    <a href="demande-visa?type=long" class="btn btn-accent">Remplir</a>
-                </div>
-            </div>
-
-            <!-- Card: Consulter Dossier -->
-            <div class="card">
-                <div class="card-header bg-info">
-                    <svg class="card-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-                    </svg>
-                </div>
-                <div class="card-body">
-                    <h2>Consulter Dossier</h2>
-                    <p>Suivre l'etat de votre demande</p>
-                </div>
-                <div class="card-footer">
-                    <a href="consulter-dossier" class="btn btn-info">Consulter</a>
-                </div>
-            </div>
+            </c:forEach>
         </div>
 
         <div class="info-section">
