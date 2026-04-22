@@ -68,7 +68,17 @@ public class CreerDemandeVisaForm {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate visaTranDateExpiration;
 
+    private java.util.List<Long> champsCommunsCoches;
+
     private java.util.List<Long> champsSpecifiquesCoches;
+
+    public java.util.List<Long> getChampsCommunsCoches() {
+        return champsCommunsCoches;
+    }
+
+    public void setChampsCommunsCoches(java.util.List<Long> champsCommunsCoches) {
+        this.champsCommunsCoches = champsCommunsCoches;
+    }
 
     public String getVisaTranNumPasseport() {
         return visaTranNumPasseport;

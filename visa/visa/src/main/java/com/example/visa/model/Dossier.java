@@ -17,8 +17,12 @@ public class Dossier {
     private DemandeVisa demandeVisa;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_champ_fournir_specifique", nullable = false)
+    @JoinColumn(name = "id_champ_fournir_specifique", nullable = true)
     private ChampFournirSpecifique champFournirSpecifique;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_champ_fournir_commune", nullable = true)
+    private ChampFournirCommune champFournirCommune;
 
     public Long getId() {
         return id;
@@ -50,5 +54,13 @@ public class Dossier {
 
     public void setChampFournirSpecifique(ChampFournirSpecifique champFournirSpecifique) {
         this.champFournirSpecifique = champFournirSpecifique;
+    }
+
+    public ChampFournirCommune getChampFournirCommune() {
+        return champFournirCommune;
+    }
+
+    public void setChampFournirCommune(ChampFournirCommune champFournirCommune) {
+        this.champFournirCommune = champFournirCommune;
     }
 }

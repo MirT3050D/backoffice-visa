@@ -167,10 +167,17 @@ CREATE TABLE dossier(
    Id SERIAL,
    est_coche BOOLEAN NOT NULL,
    Id_demande_visa INTEGER NOT NULL,
-   Id_champ_fournir_specifique INTEGER NOT NULL,
+   Id_champ_fournir_specifique INTEGER,
+   Id_champ_fournir_commune INTEGER,
    PRIMARY KEY(Id),
    FOREIGN KEY(Id_demande_visa) REFERENCES demande_visa(Id),
-   FOREIGN KEY(Id_champ_fournir_specifique) REFERENCES champ_fournir_specifique(Id)
+   FOREIGN KEY(Id_champ_fournir_specifique) REFERENCES champ_fournir_specifique(Id),
+   FOREIGN KEY(Id_champ_fournir_commune) REFERENCES champ_fournir_commune(Id),
+   CONSTRAINT ck_dossier_one_champ CHECK (
+      (Id_champ_fournir_specifique IS NOT NULL AND Id_champ_fournir_commune IS NULL)
+      OR
+      (Id_champ_fournir_specifique IS NULL AND Id_champ_fournir_commune IS NOT NULL)
+   )
 );
 
 CREATE TABLE carte_resident(

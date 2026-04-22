@@ -5,9 +5,11 @@ import com.example.visa.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class DemandeVisaService {
@@ -18,6 +20,8 @@ public class DemandeVisaService {
 	private final SitutationFamilialeRepository situtationFamilialeRepository;
 	private final TypeDemandeVisaRepository typeDemandeVisaRepository;
 	private final TypeVisaRepository typeVisaRepository;
+	private final VisaTransformableRepository visaTransformableRepository;
+	private final DossierRepository dossierRepository;
 	private final ChampFournirCommuneRepository champFournirCommuneRepository;
 	private final ChampFournirSpecifiqueRepository champFournirSpecifiqueRepository;
 
@@ -29,6 +33,8 @@ public class DemandeVisaService {
 			SitutationFamilialeRepository situtationFamilialeRepository,
 			TypeDemandeVisaRepository typeDemandeVisaRepository,
 			TypeVisaRepository typeVisaRepository,
+			VisaTransformableRepository visaTransformableRepository,
+			DossierRepository dossierRepository,
 			ChampFournirCommuneRepository champFournirCommuneRepository,
 			ChampFournirSpecifiqueRepository champFournirSpecifiqueRepository) {
 		this.demandeVisaRepository = demandeVisaRepository;
@@ -38,6 +44,8 @@ public class DemandeVisaService {
 		this.situtationFamilialeRepository = situtationFamilialeRepository;
 		this.typeDemandeVisaRepository = typeDemandeVisaRepository;
 		this.typeVisaRepository = typeVisaRepository;
+		this.visaTransformableRepository = visaTransformableRepository;
+		this.dossierRepository = dossierRepository;
 		this.champFournirCommuneRepository = champFournirCommuneRepository;
 		this.champFournirSpecifiqueRepository = champFournirSpecifiqueRepository;
 	}
@@ -134,13 +142,50 @@ public class DemandeVisaService {
 		passeport.setEtatCivil(savedEtatCivil);
 		Passeport savedPasseport = passeportRepository.save(passeport);
 
+		VisaTransformable visaTransformable = new VisaTransformable();
+		visaTransformable.setNumero_passport(form.getVisaTranNumPasseport());
+		visaTransformable.setDate_delivrance(form.getVisaTranDateDelivrance());
+		visaTransformable.setDate_expiration(form.getVisaTranDateExpiration());
+		visaTransformable.setEtatCivil(savedEtatCivil);
+		visaTransformableRepository.save(visaTransformable);
+
 		DemandeVisa demandeVisa = new DemandeVisa();
 		demandeVisa.setDate_demande(form.getDateDemande());
 		demandeVisa.setType_demande_visa(typeDemandeVisa);
 		demandeVisa.setType_visa(typeVisa);
 		demandeVisa.setPasseport(savedPasseport);
 
-		return demandeVisaRepository.save(demandeVisa);
+		DemandeVisa savedDemandeVisa = demandeVisaRepository.save(demandeVisa);
+
+		Set<Long> champsCommunsCoches = form.getChampsCommunsCoches() == null
+				? new HashSet<>()
+				: new HashSet<>(form.getChampsCommunsCoches());
+
+		Set<Long> champsSpecifiquesCoches = form.getChampsSpecifiquesCoches() == null
+				? new HashSet<>()
+				: new HashSet<>(form.getChampsSpecifiquesCoches());
+
+		List<ChampFournirCommune> champsCommuns = champFournirCommuneRepository.findAll();
+		for (ChampFournirCommune champCommun : champsCommuns) {
+			Dossier dossierCommun = new Dossier();
+			dossierCommun.setDemandeVisa(savedDemandeVisa);
+			dossierCommun.setChampFournirCommune(champCommun);
+			dossierCommun.setChampFournirSpecifique(null);
+			dossierCommun.setEstCoche(champsCommunsCoches.contains(champCommun.getId()));
+			dossierRepository.save(dossierCommun);
+		}
+
+		List<ChampFournirSpecifique> champsSpecifiques = champFournirSpecifiqueRepository.findByTypeVisaId(typeVisa.getId());
+		for (ChampFournirSpecifique champSpecifique : champsSpecifiques) {
+			Dossier dossierSpecifique = new Dossier();
+			dossierSpecifique.setDemandeVisa(savedDemandeVisa);
+			dossierSpecifique.setChampFournirCommune(null);
+			dossierSpecifique.setChampFournirSpecifique(champSpecifique);
+			dossierSpecifique.setEstCoche(champsSpecifiquesCoches.contains(champSpecifique.getId()));
+			dossierRepository.save(dossierSpecifique);
+		}
+
+		return savedDemandeVisa;
 	}
 
 }

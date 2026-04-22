@@ -159,7 +159,7 @@
                 <div class="form-row checkbox-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
                     <c:forEach var="champ" items="${champsCommuns}">
                         <div class="form-group checkbox-group" style="margin-bottom: 0; display: flex; align-items: center; flex-direction: row; gap: 10px;">
-                            <input type="checkbox" id="commune_${champ.id}" name="champCommune_${champ.id}" style="width: auto; margin: 0;">
+                            <input type="checkbox" id="commune_${champ.id}" name="champsCommunsCoches" value="${champ.id}" style="width: auto; margin: 0;">
                             <label for="commune_${champ.id}" style="margin: 0; font-weight: normal; cursor: pointer;">
                                 <c:out value="${champ.label}" />
                             </label>
@@ -178,7 +178,7 @@
                 <div class="form-row checkbox-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
                     <c:forEach var="champ" items="${champsSpecifiques}">
                         <div class="form-group checkbox-group" style="margin-bottom: 0; display: flex; align-items: center; flex-direction: row; gap: 10px;">
-                            <input type="checkbox" id="specifique_${champ.id}" name="champSpecifique_${champ.id}" style="width: auto; margin: 0;">
+                            <input type="checkbox" id="specifique_${champ.id}" name="champsSpecifiquesCoches" value="${champ.id}" style="width: auto; margin: 0;">
                             <label for="specifique_${champ.id}" style="margin: 0; font-weight: normal; cursor: pointer;">
                                 <c:out value="${champ.label}" />
                             </label>
