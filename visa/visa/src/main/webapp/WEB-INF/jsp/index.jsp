@@ -17,7 +17,7 @@
         </div>
 
         <div class="cards-grid">
-            <!-- Card: Nouvelle Demande -->
+            <!-- Card: Demande de Visa -->
             <div class="card">
                 <div class="card-header bg-primary">
                     <svg class="card-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -25,27 +25,11 @@
                     </svg>
                 </div>
                 <div class="card-body">
-                    <h2>Nouvelle Demande</h2>
-                    <p>Creer une nouvelle demande de visa de sejour</p>
+                    <h2>Demande de Visa</h2>
+                    <p>Soumettre une nouvelle demande de visa de sejour</p>
                 </div>
                 <div class="card-footer">
-                    <a href="demande-visa" class="btn btn-primary">Commencer</a>
-                </div>
-            </div>
-
-            <!-- Card: Demande Visa Court Sejour -->
-            <div class="card">
-                <div class="card-header bg-secondary">
-                    <svg class="card-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/>
-                    </svg>
-                </div>
-                <div class="card-body">
-                    <h2>Visa Court Sejour</h2>
-                    <p>Demande pour un sejour de moins de 90 jours</p>
-                </div>
-                <div class="card-footer">
-                    <a href="demande-visa?type=court" class="btn btn-secondary">Remplir</a>
+                    <a href="visa-type" class="btn btn-primary">Commencer</a>
                 </div>
             </div>
 

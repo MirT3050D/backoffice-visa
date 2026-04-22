@@ -6,13 +6,29 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class FrontController {
 
-    @GetMapping("/front")
-    public String front() {
+    @GetMapping("/")
+    public String index() {
         return "index";
     }
 
-    @GetMapping("/demande-visa")
+    @GetMapping("/visa-demande")
     public String formdemande() {
-        return "demande-visa";
+        return "visa-demande";
     }
+    
+    @GetMapping("/visa-type")
+    public String typeVisa() {
+        return "visa-type";
+    }
+
+    @GetMapping("/visa-form")
+    public String visaForm() {
+        return "visa-form";
+    }
+
+    @GetMapping("/visa-recap")
+    public String confirmationVisa() {
+        return "visa-recap";
+    }
+
 }
