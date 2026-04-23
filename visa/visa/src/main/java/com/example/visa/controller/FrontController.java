@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import com.example.visa.model.DemandeVisa;
 import com.example.visa.model.Dossier;
 import com.example.visa.repository.TypeDemandeVisaRepository;
@@ -19,6 +20,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Comparator;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 public class FrontController {
@@ -79,24 +82,63 @@ public class FrontController {
     }
 
     @GetMapping("/list/{id}/edit")
-    public String edit(@PathVariable Long id, Model model) {
+    public String edit(@PathVariable Long id,
+                       @RequestParam(value = "typeVisaId", required = false) Long selectedTypeVisaId,
+                       Model model) {
         DemandeVisa demande = demandeVisaService.getDemandeById(id).orElse(null);
         if (demande == null) {
             return "redirect:/list";
         }
 
+        List<Dossier> dossiers = dossierRepository.findByDemandeVisaIdOrderByIdAsc(id);
+        Set<Long> champsCommunsCoches = dossiers.stream()
+            .filter(d -> d.getChampFournirCommune() != null && d.isEstCoche())
+            .map(d -> d.getChampFournirCommune().getId())
+            .collect(Collectors.toSet());
+        Set<Long> champsSpecifiquesCoches = dossiers.stream()
+            .filter(d -> d.getChampFournirSpecifique() != null && d.isEstCoche())
+            .map(d -> d.getChampFournirSpecifique().getId())
+            .collect(Collectors.toSet());
+
         DemandeVisaEditForm form = new DemandeVisaEditForm();
         form.setDateDemande(demande.getDate_demande());
+        form.setTypeDemandeId(demande.getType_demande_visa().getId());
+        form.setTypeVisaId(demande.getType_visa().getId());
+        if (selectedTypeVisaId != null) {
+            form.setTypeVisaId(selectedTypeVisaId);
+        }
         form.setNom(demande.getPasseport().getEtatCivil().getNom());
         form.setPrenom(demande.getPasseport().getEtatCivil().getPrenom());
+        form.setNomJeuneFille(demande.getPasseport().getEtatCivil().getNom_jeune_fille());
         form.setEmail(demande.getPasseport().getEtatCivil().getEmail());
         form.setNumeroTelephone(demande.getPasseport().getEtatCivil().getNumero_telephone());
+        form.setDateNaissance(demande.getPasseport().getEtatCivil().getDate_naissance());
+        form.setLieuNaissance(demande.getPasseport().getEtatCivil().getLieu_naissance());
+        form.setAdresseMada(demande.getPasseport().getEtatCivil().getAdresse_mada());
+        form.setNationaliteId(demande.getPasseport().getEtatCivil().getNationalite().getId());
+        form.setSituationFamilialeId(demande.getPasseport().getEtatCivil().getSituation_familiale().getId());
         form.setNumeroPasseport(demande.getPasseport().getNumero_passport());
         form.setDateDelivrancePasseport(demande.getPasseport().getDate_delivrance());
         form.setDateExpirationPasseport(demande.getPasseport().getDate_expiration());
+        demandeVisaService.getVisaTransformableByEtatCivilId(demande.getPasseport().getEtatCivil().getId())
+                .ifPresent(visaTransformable -> {
+                    form.setVisaTranNumPasseport(visaTransformable.getNumero_passport());
+                    form.setVisaTranDateDelivrance(visaTransformable.getDate_delivrance());
+                    form.setVisaTranDateExpiration(visaTransformable.getDate_expiration());
+                });
+        form.setChampsCommunsCoches(champsCommunsCoches.stream().toList());
+        form.setChampsSpecifiquesCoches(champsSpecifiquesCoches.stream().toList());
 
         model.addAttribute("demande", demande);
         model.addAttribute("form", form);
+        model.addAttribute("typesDemande", demandeVisaService.getAllTypesDemandeVisa());
+        model.addAttribute("typesVisa", demandeVisaService.getAllTypesVisa());
+        model.addAttribute("nationalites", demandeVisaService.getAllNationalites());
+        model.addAttribute("situationsFamiliales", demandeVisaService.getAllSituationsFamiliales());
+        model.addAttribute("champsCommuns", demandeVisaService.getChampsCommuns());
+        model.addAttribute("champsSpecifiques", demandeVisaService.getChampsSpecifiques(form.getTypeVisaId()));
+        model.addAttribute("champsCommunsCoches", champsCommunsCoches);
+        model.addAttribute("champsSpecifiquesCoches", champsSpecifiquesCoches);
         return "edit";
     }
 

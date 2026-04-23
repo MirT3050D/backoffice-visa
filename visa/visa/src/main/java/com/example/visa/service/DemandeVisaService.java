@@ -56,6 +56,10 @@ public class DemandeVisaService {
 		return typeVisaRepository.findAll();
 	}
 
+	public List<TypeDemandeVisa> getAllTypesDemandeVisa() {
+		return typeDemandeVisaRepository.findAll();
+	}
+
 	public List<ChampFournirCommune> getChampsCommuns() {
 		return champFournirCommuneRepository.findAll();
 	}
@@ -74,6 +78,10 @@ public class DemandeVisaService {
 
 	 public Optional<DemandeVisa> getDemandeById(Long id) {
 		 return demandeVisaRepository.findById(id);
+	 }
+
+	 public Optional<VisaTransformable> getVisaTransformableByEtatCivilId(Long etatCivilId) {
+		 return visaTransformableRepository.findFirstByEtatCivilId(etatCivilId);
 	 }
 
 	public Map<String, String[][]> construireChampsDynamiques(Long typeVisaId) {
@@ -199,29 +207,88 @@ public class DemandeVisaService {
 		 DemandeVisa demande = demandeVisaRepository.findById(id)
 				 .orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
 
-		 if (form.getDateDemande() != null) {
-			 demande.setDate_demande(form.getDateDemande());
-		 }
+		 TypeDemandeVisa typeDemandeVisa = typeDemandeVisaRepository.findById(form.getTypeDemandeId())
+				 .orElseThrow(() -> new IllegalArgumentException("Type de demande introuvable"));
+
+		 TypeVisa typeVisa = typeVisaRepository.findById(form.getTypeVisaId())
+				 .orElseThrow(() -> new IllegalArgumentException("Type visa introuvable"));
+
+		 Nationalite nationalite = nationaliteRepository.findById(form.getNationaliteId())
+				 .orElseThrow(() -> new IllegalArgumentException("Nationalite introuvable"));
+
+		 SitutationFamiliale situationFamiliale = situtationFamilialeRepository.findById(form.getSituationFamilialeId())
+				 .orElseThrow(() -> new IllegalArgumentException("Situation familiale introuvable"));
+
+		 demande.setDate_demande(form.getDateDemande());
+		 demande.setType_demande_visa(typeDemandeVisa);
+		 demande.setType_visa(typeVisa);
 
 		 Passeport passeport = demande.getPasseport();
 		 EtatCivil etatCivil = passeport.getEtatCivil();
 
 		 etatCivil.setNom(form.getNom());
 		 etatCivil.setPrenom(form.getPrenom());
+		 etatCivil.setNom_jeune_fille(form.getNomJeuneFille());
 		 etatCivil.setEmail(form.getEmail());
 		 etatCivil.setNumero_telephone(form.getNumeroTelephone());
+		 etatCivil.setDate_naissance(form.getDateNaissance());
+		 etatCivil.setLieu_naissance(form.getLieuNaissance());
+		 etatCivil.setAdresse_mada(form.getAdresseMada());
+		 etatCivil.setNationalite(nationalite);
+		 etatCivil.setSituation_familiale(situationFamiliale);
 
 		 passeport.setNumero_passport(form.getNumeroPasseport());
-		 if (form.getDateDelivrancePasseport() != null) {
-			 passeport.setDate_delivrance(form.getDateDelivrancePasseport());
-		 }
-		 if (form.getDateExpirationPasseport() != null) {
-			 passeport.setDate_expiration(form.getDateExpirationPasseport());
-		 }
+		 passeport.setDate_delivrance(form.getDateDelivrancePasseport());
+		 passeport.setDate_expiration(form.getDateExpirationPasseport());
+
+		 VisaTransformable visaTransformable = visaTransformableRepository
+				 .findFirstByEtatCivilId(etatCivil.getId())
+				 .orElseGet(() -> {
+					 VisaTransformable v = new VisaTransformable();
+					 v.setEtatCivil(etatCivil);
+					 return v;
+				 });
+		 visaTransformable.setNumero_passport(form.getVisaTranNumPasseport());
+		 visaTransformable.setDate_delivrance(form.getVisaTranDateDelivrance());
+		 visaTransformable.setDate_expiration(form.getVisaTranDateExpiration());
 
 		 etatCivilRepository.save(etatCivil);
 		 passeportRepository.save(passeport);
-		 return demandeVisaRepository.save(demande);
+		 visaTransformableRepository.save(visaTransformable);
+
+		 DemandeVisa savedDemande = demandeVisaRepository.save(demande);
+
+		 Set<Long> champsCommunsCoches = form.getChampsCommunsCoches() == null
+				 ? new HashSet<>()
+				 : new HashSet<>(form.getChampsCommunsCoches());
+
+		 Set<Long> champsSpecifiquesCoches = form.getChampsSpecifiquesCoches() == null
+				 ? new HashSet<>()
+				 : new HashSet<>(form.getChampsSpecifiquesCoches());
+
+		 dossierRepository.deleteByDemandeVisaId(savedDemande.getId());
+
+		 List<ChampFournirCommune> champsCommuns = champFournirCommuneRepository.findAll();
+		 for (ChampFournirCommune champCommun : champsCommuns) {
+			 Dossier dossierCommun = new Dossier();
+			 dossierCommun.setDemandeVisa(savedDemande);
+			 dossierCommun.setChampFournirCommune(champCommun);
+			 dossierCommun.setChampFournirSpecifique(null);
+			 dossierCommun.setEstCoche(champsCommunsCoches.contains(champCommun.getId()));
+			 dossierRepository.save(dossierCommun);
+		 }
+
+		 List<ChampFournirSpecifique> champsSpecifiques = champFournirSpecifiqueRepository.findByTypeVisaId(typeVisa.getId());
+		 for (ChampFournirSpecifique champSpecifique : champsSpecifiques) {
+			 Dossier dossierSpecifique = new Dossier();
+			 dossierSpecifique.setDemandeVisa(savedDemande);
+			 dossierSpecifique.setChampFournirCommune(null);
+			 dossierSpecifique.setChampFournirSpecifique(champSpecifique);
+			 dossierSpecifique.setEstCoche(champsSpecifiquesCoches.contains(champSpecifique.getId()));
+			 dossierRepository.save(dossierSpecifique);
+		 }
+
+		 return savedDemande;
 	 }
 
 	 @Transactional
