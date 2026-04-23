@@ -337,6 +337,234 @@ private Set<Document> documents = new HashSet<>();
 
 ---
 
+## 4.4 Comprendre vite: JPA <-> SQL (scripts concrets)
+
+Si tu veux retenir une seule idee:
+- `@JoinColumn` = une cle etrangere dans une table
+- `One-To-One` = cle etrangere + contrainte `UNIQUE`
+- `One-To-Many` = cle etrangere du cote MANY
+- `Many-To-Many` = table intermediaire (table de jointure)
+
+### A) One-To-One (`Applicant` <-> `Passport`)
+
+En JPA:
+
+```java
+@OneToOne
+@JoinColumn(name = "applicant_id", nullable = false, unique = true)
+private Applicant applicant;
+```
+
+Equivalent SQL (PostgreSQL):
+
+```sql
+-- Table principale
+CREATE TABLE applicant (
+    id BIGSERIAL PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE
+);
+
+-- Table liee en one-to-one
+CREATE TABLE passport (
+    id BIGSERIAL PRIMARY KEY,
+    number VARCHAR(50) NOT NULL UNIQUE,
+    applicant_id BIGINT NOT NULL UNIQUE,
+    CONSTRAINT fk_passport_applicant
+        FOREIGN KEY (applicant_id)
+        REFERENCES applicant(id)
+        ON DELETE CASCADE
+);
+```
+
+Donnees de test:
+
+```sql
+INSERT INTO applicant (first_name, last_name, email)
+VALUES ('Aina', 'Rakoto', 'aina.rakoto@mail.com');
+
+INSERT INTO passport (number, applicant_id)
+VALUES ('P1234567', 1);
+
+-- Ceci va echouer (normal) car applicant_id doit etre unique
+-- INSERT INTO passport (number, applicant_id) VALUES ('P9999999', 1);
+```
+
+Verification:
+
+```sql
+SELECT a.id, a.first_name, p.number
+FROM applicant a
+JOIN passport p ON p.applicant_id = a.id;
+```
+
+### B) One-To-Many / Many-To-One (`Applicant` -> `VisaRequest`)
+
+En JPA (cote MANY):
+
+```java
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "applicant_id", nullable = false)
+private Applicant applicant;
+```
+
+Equivalent SQL:
+
+```sql
+CREATE TABLE visa_request (
+    id BIGSERIAL PRIMARY KEY,
+    destination_country VARCHAR(100) NOT NULL,
+    travel_date DATE,
+    applicant_id BIGINT NOT NULL,
+    CONSTRAINT fk_visa_request_applicant
+        FOREIGN KEY (applicant_id)
+        REFERENCES applicant(id)
+        ON DELETE CASCADE
+);
+```
+
+Donnees de test:
+
+```sql
+INSERT INTO visa_request (destination_country, travel_date, applicant_id)
+VALUES
+('France', '2026-07-15', 1),
+('Canada', '2026-08-20', 1);
+```
+
+Verification:
+
+```sql
+-- Un applicant avec plusieurs demandes
+SELECT a.id, a.first_name, vr.id AS visa_request_id, vr.destination_country
+FROM applicant a
+JOIN visa_request vr ON vr.applicant_id = a.id
+WHERE a.id = 1;
+```
+
+### C) Many-To-Many (`VisaRequest` <-> `Document`)
+
+En JPA:
+
+```java
+@ManyToMany
+@JoinTable(
+    name = "visa_request_document",
+    joinColumns = @JoinColumn(name = "visa_request_id"),
+    inverseJoinColumns = @JoinColumn(name = "document_id")
+)
+private Set<Document> documents = new HashSet<>();
+```
+
+Equivalent SQL:
+
+```sql
+CREATE TABLE document (
+    id BIGSERIAL PRIMARY KEY,
+    type VARCHAR(100) NOT NULL
+);
+
+-- Table de jointure many-to-many
+CREATE TABLE visa_request_document (
+    visa_request_id BIGINT NOT NULL,
+    document_id BIGINT NOT NULL,
+    PRIMARY KEY (visa_request_id, document_id),
+    CONSTRAINT fk_vrd_visa_request
+        FOREIGN KEY (visa_request_id)
+        REFERENCES visa_request(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_vrd_document
+        FOREIGN KEY (document_id)
+        REFERENCES document(id)
+        ON DELETE CASCADE
+);
+```
+
+Donnees de test:
+
+```sql
+INSERT INTO document (type)
+VALUES ('Passeport scanne'), ('Photo identite'), ('Reservation billet');
+
+-- La demande 1 a 2 documents
+INSERT INTO visa_request_document (visa_request_id, document_id)
+VALUES (1, 1), (1, 2);
+
+-- La demande 2 reutilise un document + un autre
+INSERT INTO visa_request_document (visa_request_id, document_id)
+VALUES (2, 2), (2, 3);
+```
+
+Verification:
+
+```sql
+SELECT vr.id AS visa_request_id, d.id AS document_id, d.type
+FROM visa_request vr
+JOIN visa_request_document vrd ON vrd.visa_request_id = vr.id
+JOIN document d ON d.id = vrd.document_id
+ORDER BY vr.id, d.id;
+```
+
+### D) Version complete (copier-coller) dans l'ordre
+
+```sql
+DROP TABLE IF EXISTS visa_request_document;
+DROP TABLE IF EXISTS document;
+DROP TABLE IF EXISTS visa_request;
+DROP TABLE IF EXISTS passport;
+DROP TABLE IF EXISTS applicant;
+
+CREATE TABLE applicant (
+    id BIGSERIAL PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE
+);
+
+CREATE TABLE passport (
+    id BIGSERIAL PRIMARY KEY,
+    number VARCHAR(50) NOT NULL UNIQUE,
+    applicant_id BIGINT NOT NULL UNIQUE,
+    CONSTRAINT fk_passport_applicant
+        FOREIGN KEY (applicant_id)
+        REFERENCES applicant(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE visa_request (
+    id BIGSERIAL PRIMARY KEY,
+    destination_country VARCHAR(100) NOT NULL,
+    travel_date DATE,
+    applicant_id BIGINT NOT NULL,
+    CONSTRAINT fk_visa_request_applicant
+        FOREIGN KEY (applicant_id)
+        REFERENCES applicant(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE document (
+    id BIGSERIAL PRIMARY KEY,
+    type VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE visa_request_document (
+    visa_request_id BIGINT NOT NULL,
+    document_id BIGINT NOT NULL,
+    PRIMARY KEY (visa_request_id, document_id),
+    CONSTRAINT fk_vrd_visa_request
+        FOREIGN KEY (visa_request_id)
+        REFERENCES visa_request(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_vrd_document
+        FOREIGN KEY (document_id)
+        REFERENCES document(id)
+        ON DELETE CASCADE
+);
+```
+
+---
+
 ## 5) Repository - pret a copier
 
 ### `repository/ApplicantRepository.java`
