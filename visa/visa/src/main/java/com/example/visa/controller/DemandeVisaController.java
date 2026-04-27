@@ -83,7 +83,8 @@ public class DemandeVisaController {
     }
 
     @GetMapping("/list")
-    public String listDemandes() {
+    public String listDemandes(Model model) {
+        model.addAttribute("demandes", demandeVisaService.getAllDemandes());
         return "list-demande-visa";
     }
 }

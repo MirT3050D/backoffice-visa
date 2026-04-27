@@ -233,4 +233,8 @@ public class DemandeVisaService {
 		 demandeVisaRepository.deleteById(id);
 	 }
 
+	 public List<DemandeVisa> getAllDemandes() {
+		 return demandeVisaRepository.findAll();
+	 }
+
 }

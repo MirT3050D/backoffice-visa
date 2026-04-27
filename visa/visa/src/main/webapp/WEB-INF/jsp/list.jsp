@@ -7,6 +7,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Backoffice Visa - Liste des Demandes</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
+    <style>
+        .search-section {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1.2rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            fill: #666;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 2.8rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: #fff;
+            font-family: inherit;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+            background-color: #fafafa;
+        }
+
+        .search-input::placeholder {
+            color: #999;
+        }
+
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn-secondary {
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e8e8e8;
+            border-color: #bbb;
+        }
+    </style>
 </head>
 <body>
     <jsp:include page="components/header.jsp" />
@@ -41,6 +112,15 @@
                     <div class="flash-box flash-error">${errorMessage}</div>
                 </c:if>
 
+                <div class="search-section">
+                    <div class="search-wrapper">
+                        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                        </svg>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Rechercher par ID, date, type...">
+                    </div>
+                </div>
+
                 <div class="table-wrapper">
                     <table class="data-table">
                         <thead>
@@ -52,7 +132,7 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="demandesTableBody">
                             <c:choose>
                                 <c:when test="${empty demandes}">
                                     <tr>
@@ -95,22 +175,48 @@
 
     <script>
         (function () {
+            // Sidebar toggle
             var sidebar = document.getElementById('navSidebar');
             var toggle = document.getElementById('sidebarToggle');
 
-            if (!sidebar || !toggle) {
-                return;
+            if (sidebar && toggle) {
+                toggle.addEventListener('click', function () {
+                    var isCollapsed = sidebar.classList.toggle('sidebar-collapsed');
+                    sidebar.classList.toggle('sidebar-expanded', !isCollapsed);
+                    toggle.setAttribute('aria-expanded', String(!isCollapsed));
+                    toggle.setAttribute('aria-label', isCollapsed ? 'Afficher la navigation' : 'Masquer la navigation');
+                });
             }
 
-            toggle.addEventListener('click', function () {
-                var isCollapsed = sidebar.classList.toggle('sidebar-collapsed');
-                sidebar.classList.toggle('sidebar-expanded', !isCollapsed);
-                toggle.setAttribute('aria-expanded', String(!isCollapsed));
-                toggle.setAttribute('aria-label', isCollapsed ? 'Afficher la navigation' : 'Masquer la navigation');
-            });
+            // Search functionality
+            var searchInput = document.getElementById('searchInput');
+            var tableBody = document.getElementById('demandesTableBody');
+            var rows = tableBody ? tableBody.getElementsByTagName('tr') : [];
 
-            var rows = document.querySelectorAll('.clickable-row');
-            rows.forEach(function (row) {
+            if (searchInput && tableBody) {
+                searchInput.addEventListener('keyup', function() {
+                    var filter = searchInput.value.toLowerCase().trim();
+                    
+                    for (var i = 0; i < rows.length; i++) {
+                        var cells = rows[i].getElementsByTagName('td');
+                        var match = false;
+                        
+                        // Skip last column (actions)
+                        for (var j = 0; j < cells.length - 1; j++) {
+                            if (cells[j].innerText.toLowerCase().indexOf(filter) > -1) {
+                                match = true;
+                                break;
+                            }
+                        }
+                        
+                        rows[i].style.display = match ? "" : "none";
+                    }
+                });
+            }
+
+            // Clickable rows
+            var clickableRows = document.querySelectorAll('.clickable-row');
+            clickableRows.forEach(function (row) {
                 row.addEventListener('click', function () {
                     var href = row.getAttribute('data-href');
                     if (href) {
@@ -119,6 +225,7 @@
                 });
             });
 
+            // Prevent action clicks from triggering row click
             var actionElements = document.querySelectorAll('.row-action, .delete-form');
             actionElements.forEach(function (element) {
                 element.addEventListener('click', function (event) {
@@ -130,6 +237,9 @@
             });
         })();
     </script>
+
+
+
 
     <jsp:include page="components/footer.jsp" />
 </body>
