@@ -192,3 +192,62 @@ public ResponseEntity<List<ChampFournirCommuneDTO>> champsFournirCommuns(@Reques
 public ResponseEntity<List<ChampFournirSpecifiqueDTO>> champsFournirSpecifiques(@RequestParam Long idTypeVisa);
 ```
 ## Integration (Steeve)
+
+
+Todo Sprint2 27/04/2026
+Affichage : Amboara
+  Ajouter une page pour la demande de duplicata (apres le choix du type de demande)
+    Reprendre les memes champs que la demande de visa
+    Ajouter un bouton "sans donnees interieures"
+    Afficher la liste des visas disponibles (issus des demandes de visa)
+  Ajouter une page pour la demande de transfert de visa (apres le choix du type de demande)
+    Ajouter un bouton "sans donnees interieures"
+    Reprendre les memes champs que la demande de visa
+    Afficher la liste des visas disponibles (issus des demandes de visa)
+  Ajouter la validation front des champs obligatoires pour les parcours duplicata et transfert
+  Ajouter la redirection vers la liste des demandes apres une creation reussie
+    
+Métier : Steeve
+    Tache: Gestion des demandes de visa
+      Fonction: CreateDemandeVisaValide((attribut DemandeVisa))
+        Description: Cree une demande de visa valide, enregistre les informations principales et initialise le statut de la demande.
+        Classe: DemandeVisaService, DemandeVisaRepository, DemandeVisaController
+        Base: demande_visa, statut_demande, dossier, passport, etat_civil, visa_transformable
+
+    Tache: Gestion des duplicata
+      Fonction: CreateDuplicata((attribut Duplicata))
+        Description: Cree une demande de duplicata a partir d'un visa existant et trace son cycle de traitement.
+        Classe: DuplicataService, DuplicataRepository, DuplicataController
+        Base: duplicata, statut_demande, demande_visa, visa
+
+    Tache: Gestion des transferts de visa
+      Fonction: CreateTransfertVisa((attribut TransfertVisa))
+        Description: Cree une demande de transfert de visa en liant les donnees du visa source et le nouveau contexte de transfert.
+        Classe: TransfertVisaService, TransfertVisaRepository, TransfertVisaController
+        Base: transfert_visa, statut_demande, demande_visa, visa
+
+    Tache: Creation des classes et modeles
+      Fonction: Creer les classes metier, DTO et modeles necessaires
+        Description: Met en place les classes techniques et objets de donnees pour supporter les parcours demande, duplicata et transfert.
+        Classe: DemandeVisa, Duplicata, TransfertVisa, DemandeVisaCreateDTO, DemandeVisaListDTO, DuplicataCreateDTO, DuplicataListDTO, TransfertVisaCreateDTO, TransfertVisaListDTO
+        Base: demande_visa, duplicata, transfert_visa, dossier, statut_demande
+
+    Tache: Validation, statuts et tests
+      Fonction: Implementer les regles metier, les statuts initiaux et les tests
+        Description: Applique les controles metier, initialise les statuts de suivi et garantit la qualite via des tests automatises.
+        Classe: DemandeVisaService, DuplicataService, TransfertVisaService
+        Base: type_statut_demande, statut_demande, demande_visa, duplicata, transfert_visa
+
+Base: Liste des tables a utiliser pour le metier
+  type_demande_visa
+  type_visa
+  type_statut_demande
+  etat_civil
+  passport
+  visa_transformable
+  demande_visa
+  statut_demande
+  visa
+  dossier
+  duplicata
+  transfert_visa
