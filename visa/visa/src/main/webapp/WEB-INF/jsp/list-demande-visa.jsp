@@ -77,6 +77,26 @@
             background-color: #e8e8e8;
             border-color: #bbb;
         }
+
+        .row-arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            color: #4CAF50;
+        }
+
+        .clickable-row:hover .row-arrow {
+            transform: translateX(4px);
+        }
+
+        .row-arrow svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            fill: currentColor;
+        }
     </style>
 </head>
 <body>
@@ -147,6 +167,13 @@
                                             <td>${demande.date_demande}</td>
                                             <td>${demande.type_demande_visa.label}</td>
                                             <td>${demande.type_visa.label}</td>
+                                            <td>
+                                                <a href="#" class="row-arrow" title="Voir détail">
+                                                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                        <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L12.17 12l-3.58 3.59z"/>
+                                                    </svg>
+                                                </a>
+                                            </td>
                                         </tr>
                                     </c:forEach>
                                 </c:otherwise>
