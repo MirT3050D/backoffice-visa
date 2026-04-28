@@ -111,13 +111,13 @@ public class FrontController {
         form.setPrenom(demande.getPasseport().getEtatCivil().getPrenom());
         form.setNomJeuneFille(demande.getPasseport().getEtatCivil().getNom_jeune_fille());
         form.setEmail(demande.getPasseport().getEtatCivil().getEmail());
-        form.setNumeroTelephone(demande.getPasseport().getEtatCivil().getNumero_telephone());
+        form.setNumeroTelephone(demande.getPasseport().getEtatCivil().getNum_tel());
         form.setDateNaissance(demande.getPasseport().getEtatCivil().getDate_naissance());
         form.setLieuNaissance(demande.getPasseport().getEtatCivil().getLieu_naissance());
         form.setAdresseMada(demande.getPasseport().getEtatCivil().getAdresse_mada());
         form.setNationaliteId(demande.getPasseport().getEtatCivil().getNationalite().getId());
         form.setSituationFamilialeId(demande.getPasseport().getEtatCivil().getSituation_familiale().getId());
-        form.setNumeroPasseport(demande.getPasseport().getNumero_passport());
+        form.setNumeroPasseport(demande.getPasseport().getNum_passeport());
         form.setDateDelivrancePasseport(demande.getPasseport().getDate_delivrance());
         form.setDateExpirationPasseport(demande.getPasseport().getDate_expiration());
         demandeVisaService.getVisaTransformableByEtatCivilId(demande.getPasseport().getEtatCivil().getId())
