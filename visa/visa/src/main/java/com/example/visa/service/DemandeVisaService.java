@@ -1,6 +1,7 @@
 package com.example.visa.service;
 import com.example.visa.dto.CreerDemandeVisaForm;
 import com.example.visa.dto.DemandeVisaEditForm;
+import com.example.visa.dto.FinaliserSansDonneesForm;
 import com.example.visa.model.*;
 import com.example.visa.repository.*;
 import jakarta.transaction.Transactional;
@@ -28,6 +29,12 @@ public class DemandeVisaService {
 	private final ChampFournirSpecifiqueRepository champFournirSpecifiqueRepository;
 	private final TypeStatutDemandeRepository typeStatutDemandeRepository;
 	private final StatutDemandeRepository statutDemandeRepository;
+    private final VisaRepository visaRepository;
+    private final StatutVisaRepository statutVisaRepository;
+    private final TypeStatutVisaRepository typeStatutVisaRepository;
+    private final CarteResidentRepository carteResidentRepository;
+    private final HistoriquePasseportVisaRepository historiquePasseportVisaRepository;
+    private final VilleRepository villeRepository;
 
 	public DemandeVisaService(
 			DemandeVisaRepository demandeVisaRepository,
@@ -42,7 +49,13 @@ public class DemandeVisaService {
 			ChampFournirCommuneRepository champFournirCommuneRepository,
 			ChampFournirSpecifiqueRepository champFournirSpecifiqueRepository,
 			TypeStatutDemandeRepository typeStatutDemandeRepository,
-			StatutDemandeRepository statutDemandeRepository) {
+			StatutDemandeRepository statutDemandeRepository,
+            VisaRepository visaRepository,
+            StatutVisaRepository statutVisaRepository,
+            TypeStatutVisaRepository typeStatutVisaRepository,
+            CarteResidentRepository carteResidentRepository,
+            HistoriquePasseportVisaRepository historiquePasseportVisaRepository,
+            VilleRepository villeRepository) {
 		this.demandeVisaRepository = demandeVisaRepository;
 		this.etatCivilRepository = etatCivilRepository;
 		this.passeportRepository = passeportRepository;
@@ -56,6 +69,12 @@ public class DemandeVisaService {
 		this.champFournirSpecifiqueRepository = champFournirSpecifiqueRepository;
 		this.typeStatutDemandeRepository = typeStatutDemandeRepository;
 		this.statutDemandeRepository = statutDemandeRepository;
+        this.visaRepository = visaRepository;
+        this.statutVisaRepository = statutVisaRepository;
+        this.typeStatutVisaRepository = typeStatutVisaRepository;
+        this.carteResidentRepository = carteResidentRepository;
+        this.historiquePasseportVisaRepository = historiquePasseportVisaRepository;
+        this.villeRepository = villeRepository;
 	}
 
 	public List<TypeVisa> getAllTypesVisa() {
@@ -121,7 +140,7 @@ public class DemandeVisaService {
 	}
 
 	@Transactional
-	public DemandeVisa creerDemandeVisa(CreerDemandeVisaForm form, Long typeDemandeId) {
+	public DemandeVisa creerDemandeVisa(CreerDemandeVisaForm form, int statutInitialRang) {
 		Nationalite nationalite = nationaliteRepository.findById(form.getNationaliteId())
 				.orElseThrow(() -> new IllegalArgumentException("Nationalite introuvable"));
 
@@ -198,13 +217,7 @@ public class DemandeVisaService {
 			dossierRepository.save(dossierSpecifique);
 		}
 
-		int rang = 0;
-		if(typeDemandeId == 1L) { // si le type de demande est nouveau titre, alors le statut initial est "Creer"
-			rang = 1;
-		} else {
-			rang = 5; // sinon le statut initial est "Approuve"
-		}
-		creerStatutInitial(savedDemandeVisa, rang);
+		creerStatutInitial(savedDemandeVisa, statutInitialRang);
 
 		return savedDemandeVisa;
 	}
@@ -219,6 +232,79 @@ public class DemandeVisaService {
 		statutDemande.setDate_statut(java.time.LocalDateTime.now().toLocalDate());
 		statutDemandeRepository.save(statutDemande);
 	}
+
+    @Transactional
+    public DemandeVisa creerDemandeDuplicatatSansDonnees(FinaliserSansDonneesForm form) {
+        // 1. Créer une demande classique pour la personne fictive: 
+        // type 1 (Nouveau Titre), mais on force l'état initial à "Approuvé" (rang 5)
+        DemandeVisa demandeNouveauTitre = creerDemandeVisa(form , 5);
+        
+        // 2. Simulation de l'ancien visa à partir de cette demande fictive approuvée
+        Visa ancienVisa = new Visa();
+        ancienVisa.setNumVisa(form.getAncienNumeroVisa());
+        ancienVisa.setDataEntre(java.time.LocalDate.now()); // ou utiliser une date passée
+        ancienVisa.setDateDelivrance(form.getAncienDateDelivrance());
+        ancienVisa.setDateExpiration(form.getAncienDateExpiration());
+        ancienVisa.setDemandeVisa(demandeNouveauTitre);
+        ancienVisa.setEtatCivil(demandeNouveauTitre.getPasseport().getEtatCivil());
+        ancienVisa.setTypeVisa(demandeNouveauTitre.getType_visa());
+        
+        // Attribution d'une ville par défaut ou basée sur un paramètre (Ici par défaut première ville)
+        Ville ville = villeRepository.findAll().stream().findFirst().orElseThrow(() -> new IllegalArgumentException("Aucune ville disponible en base."));
+        ancienVisa.setVille(ville);
+        
+        Visa savedAncienVisa = visaRepository.save(ancienVisa);
+
+        // 3. Statut de ce visa (Approuve = 5)
+        TypeStatutVisa typeStatutVisaApprouve = typeStatutVisaRepository.findByRang(5.0)
+            .orElseThrow(() -> new IllegalStateException("Type Statut Visa rang 5.0 introuvable"));
+        StatutVisa statutVisa = new StatutVisa();
+        statutVisa.setVisa(savedAncienVisa);
+        statutVisa.setTypeStatutVisa(typeStatutVisaApprouve);
+        statutVisa.setDateStatut(java.time.LocalDateTime.now());
+        statutVisaRepository.save(statutVisa);
+
+        // 4. Lier le passeport et le visa via l'historique
+        HistoriquePasseportVisa historique = new HistoriquePasseportVisa();
+        historique.setPasseport(demandeNouveauTitre.getPasseport());
+        historique.setVisa(savedAncienVisa);
+        historique.setDateHistorique(java.time.LocalDateTime.now());
+        historiquePasseportVisaRepository.save(historique);
+
+        // 5. Enregistrer l'éventuelle ancienne Carte Résident liée à ce Visa
+        if (form.getAncienNumeroCarteResident() != null && !form.getAncienNumeroCarteResident().trim().isEmpty()) {
+            CarteResident ancienneCarte = new CarteResident();
+            ancienneCarte.setNum(form.getAncienNumeroCarteResident());
+            ancienneCarte.setVisa(savedAncienVisa);
+            carteResidentRepository.save(ancienneCarte);
+        }
+
+        // 6. Créer la 2ème Demande: TYPE DUPLICATA (id=2L) liée aux MÊMES passeports et type_visa
+        TypeDemandeVisa typeDemandeDuplicata = typeDemandeVisaRepository.findById(2L)
+                .orElseThrow(() -> new IllegalArgumentException("Type demande Duplicata (id=2) introuvable"));
+
+        DemandeVisa demandeDuplicata = new DemandeVisa();
+        demandeDuplicata.setDate_demande(java.time.LocalDate.now());
+        demandeDuplicata.setPasseport(demandeNouveauTitre.getPasseport());
+        demandeDuplicata.setType_visa(demandeNouveauTitre.getType_visa());
+        demandeDuplicata.setType_demande_visa(typeDemandeDuplicata);
+        
+        DemandeVisa savedDemandeDuplicata = demandeVisaRepository.save(demandeDuplicata);
+
+        // Initialiser la demande de Duplicata (elle commence toujours au rang 1 "Créer")
+        creerStatutInitial(savedDemandeDuplicata, 5);
+
+        // 7. Générer une nouvelle Carte Résident fictive issue de cette demande duplicata
+        CarteResident nouvelleCarte = new CarteResident();
+        nouvelleCarte.setNum("CR-DUP-" + System.currentTimeMillis());
+        // Cette nouvelle carte est liée à l'ancien visa 
+        // car le duplicata remplace la carte ou le visa
+        nouvelleCarte.setVisa(savedAncienVisa);
+        carteResidentRepository.save(nouvelleCarte);
+
+        // Retourner la demande finale (Le Duplicata)
+        return savedDemandeDuplicata;
+    }
 
 	@Transactional
 	public DemandeVisa updateDemandeVisa(Long id, DemandeVisaEditForm form) {

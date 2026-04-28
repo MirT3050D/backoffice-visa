@@ -137,7 +137,11 @@ public class DemandeVisaController {
         
         try {
             System.out.println("-> Appel de demandeVisaService.creerDemandeVisa()");
-            demandeVisaService.creerDemandeVisa(form, (Long)form.getTypeDemandeId());
+            int statutInitial = 1; // 1 = Créer
+            if (form.getTypeDemandeId() != 1L) {
+                statutInitial = 5; // Les demandes différentes de "Nouveau Titre" commencent avec "Approuvé"
+            }
+            demandeVisaService.creerDemandeVisa(form, statutInitial);
             System.out.println("-> Succes : Demande de visa creee en base de donnees.");
             redirectAttributes.addFlashAttribute("successMessage", "Les informations ont bien ete stockees.");
             return "redirect:/";
