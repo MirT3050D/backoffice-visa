@@ -151,13 +151,15 @@
                                 <th>Date Demande</th>
                                 <th>Type Demande</th>
                                 <th>Type Visa</th>
+                                <th>Statut</th>
+                                <th>Scan</th>
                             </tr>
                         </thead>
                         <tbody id="demandesTableBody">
                             <c:choose>
                                 <c:when test="${empty demandes}">
                                     <tr>
-                                        <td colspan="5" class="table-empty">Aucune demande enregistree pour le moment.</td>
+                                        <td colspan="6" class="table-empty">Aucune demande enregistree pour le moment.</td>
                                     </tr>
                                 </c:when>
                                 <c:otherwise>
@@ -167,8 +169,9 @@
                                             <td>${demande.date_demande}</td>
                                             <td>${demande.type_demande_visa.label}</td>
                                             <td>${demande.type_visa.label}</td>
+                                            <td>${statutLabels[demande.id]}</td>
                                             <td>
-                                                <a href="#" class="row-arrow" title="Voir détail">
+                                                <a href="${pageContext.request.contextPath}/demande/${demande.id}/scan" class="row-arrow row-action" title="Scanner">
                                                     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                                                         <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L12.17 12l-3.58 3.59z"/>
                                                     </svg>

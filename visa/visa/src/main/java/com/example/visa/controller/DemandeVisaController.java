@@ -9,11 +9,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.data.domain.PageRequest;
 
 import com.example.visa.dto.CreerDemandeVisaForm;
 import com.example.visa.dto.FinaliserSansDonneesForm;
 import com.example.visa.dto.PasseportForm;
+import com.example.visa.model.DemandeVisa;
+import com.example.visa.model.StatutDemande;
+import com.example.visa.repository.StatutDemandeRepository;
 import com.example.visa.service.DemandeVisaService;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @Controller
@@ -21,9 +29,12 @@ import com.example.visa.service.DemandeVisaService;
 @SessionAttributes("passeportData")
 public class DemandeVisaController {
     private final DemandeVisaService demandeVisaService;
+    private final StatutDemandeRepository statutDemandeRepository;
 
-    public DemandeVisaController(DemandeVisaService demandeVisaService) {
+    public DemandeVisaController(DemandeVisaService demandeVisaService,
+                                 StatutDemandeRepository statutDemandeRepository) {
         this.demandeVisaService = demandeVisaService;
+        this.statutDemandeRepository = statutDemandeRepository;
     }
 
     @GetMapping("/visa-type")
@@ -202,7 +213,21 @@ public class DemandeVisaController {
 
     @GetMapping("/list")
     public String listDemandes(Model model) {
-        model.addAttribute("demandes", demandeVisaService.getAllDemandes());
+        List<DemandeVisa> demandes = demandeVisaService.getAllDemandes();
+        Map<Long, String> statutLabels = new HashMap<>();
+        for (DemandeVisa demande : demandes) {
+            String label = statutDemandeRepository
+                    .findLatestByDemandeVisaId(demande.getId(), PageRequest.of(0, 1))
+                    .stream()
+                    .findFirst()
+                    .map(StatutDemande::getType_statut_demande)
+                    .map(type -> type.getLabel())
+                    .orElse("Creer");
+            statutLabels.put(demande.getId(), label);
+        }
+
+        model.addAttribute("demandes", demandes);
+        model.addAttribute("statutLabels", statutLabels);
         return "list-demande-visa";
     }
 }

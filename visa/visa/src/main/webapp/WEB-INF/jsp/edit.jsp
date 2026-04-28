@@ -34,7 +34,13 @@
                     <p class="subtitle">Mise a jour des informations principales</p>
                 </div>
 
+                <c:set var="isLocked" value="${demande.estVerrouille}" />
+                <c:if test="${isLocked}">
+                    <div class="flash-box flash-error">Demande verrouillee. Modification impossible.</div>
+                </c:if>
+
                 <form class="visa-form" method="post" action="${pageContext.request.contextPath}/list/${demande.id}/edit">
+                    <fieldset ${isLocked ? 'disabled="disabled"' : ''}>
                     <div class="form-section">
                         <h2 class="section-title">Demande</h2>
                         <div class="form-row">
@@ -199,8 +205,9 @@
 
                     <div class="detail-actions">
                         <a class="btn btn-secondary" href="${pageContext.request.contextPath}/list/${demande.id}">Annuler</a>
-                        <button class="btn btn-primary" type="submit">Enregistrer</button>
+                        <button class="btn btn-primary" type="submit" ${isLocked ? 'disabled' : ''}>Enregistrer</button>
                     </div>
+                    </fieldset>
                 </form>
             </main>
         </div>

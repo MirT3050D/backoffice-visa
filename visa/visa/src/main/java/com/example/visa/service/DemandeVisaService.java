@@ -4,9 +4,17 @@ import com.example.visa.dto.DemandeVisaEditForm;
 import com.example.visa.dto.FinaliserSansDonneesForm;
 import com.example.visa.model.*;
 import com.example.visa.repository.*;
+import jakarta.servlet.http.Part;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,6 +43,9 @@ public class DemandeVisaService {
     private final CarteResidentRepository carteResidentRepository;
     private final HistoriquePasseportVisaRepository historiquePasseportVisaRepository;
     private final VilleRepository villeRepository;
+
+	@Value("${app.upload.dir:uploads}")
+	private String uploadBaseDir;
 
 	public DemandeVisaService(
 			DemandeVisaRepository demandeVisaRepository,
@@ -228,7 +239,7 @@ public class DemandeVisaService {
 			dossierCommun.setDemandeVisa(savedDemandeVisa);
 			dossierCommun.setChampFournirCommune(champCommun);
 			dossierCommun.setChampFournirSpecifique(null);
-			dossierCommun.setEstCoche(champsCommunsCoches.contains(champCommun.getId()));
+			dossierCommun.setEstCoche(true);
 			dossierRepository.save(dossierCommun);
 		}
 
@@ -238,7 +249,7 @@ public class DemandeVisaService {
 			dossierSpecifique.setDemandeVisa(savedDemandeVisa);
 			dossierSpecifique.setChampFournirCommune(null);
 			dossierSpecifique.setChampFournirSpecifique(champSpecifique);
-			dossierSpecifique.setEstCoche(champsSpecifiquesCoches.contains(champSpecifique.getId()));
+			dossierSpecifique.setEstCoche(true);
 			dossierRepository.save(dossierSpecifique);
 		}
 
@@ -342,6 +353,9 @@ public class DemandeVisaService {
 	public DemandeVisa updateDemandeVisa(Long id, DemandeVisaEditForm form) {
 		DemandeVisa demande = demandeVisaRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+		if (demande.isEstVerrouille()) {
+			throw new IllegalStateException("Demande verrouillee");
+		}
 
 		Passeport passeport = demande.getPasseport();
 		EtatCivil etatCivil = passeport.getEtatCivil();
@@ -433,10 +447,98 @@ public class DemandeVisaService {
 	}
 
 	@Transactional
+	public Dossier uploadPiece(Long idDemande, Long dossierId, Part fichier) {
+		DemandeVisa demande = demandeVisaRepository.findById(idDemande)
+				.orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+		if (demande.isEstVerrouille()) {
+			throw new IllegalStateException("Demande verrouillee");
+		}
+		if (fichier == null || fichier.getSize() == 0) {
+			throw new IllegalArgumentException("Fichier vide");
+		}
+
+		Dossier dossier = dossierRepository.findByIdAndDemandeVisaId(dossierId, idDemande)
+				.orElseThrow(() -> new IllegalArgumentException("Dossier introuvable"));
+		if (!dossier.isEstCoche()) {
+			throw new IllegalStateException("Piece non requise");
+		}
+
+		Path demandeDir = getDemandeUploadDir(idDemande);
+		try {
+			Files.createDirectories(demandeDir);
+			String original = safeFileName(fichier.getSubmittedFileName());
+			String fileName = idDemande + "-" + dossierId + "-" + System.currentTimeMillis() + "-" + original;
+			Path target = demandeDir.resolve(fileName).normalize();
+			if (!target.startsWith(demandeDir)) {
+				throw new IllegalArgumentException("Nom de fichier invalide");
+			}
+
+			deleteExistingFile(dossier.getPathFichier());
+			try (InputStream input = fichier.getInputStream()) {
+				Files.copy(input, target, StandardCopyOption.REPLACE_EXISTING);
+			}
+			dossier.setPathFichier(target.toString());
+			return dossierRepository.save(dossier);
+		} catch (IOException ex) {
+			throw new IllegalStateException("Erreur lors de l'upload", ex);
+		}
+	}
+
+	@Transactional
+	public DemandeVisa verrouillerDemande(Long idDemande) {
+		DemandeVisa demande = demandeVisaRepository.findById(idDemande)
+				.orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+		if (demande.isEstVerrouille()) {
+			return demande;
+		}
+
+		List<Dossier> dossiers = dossierRepository.findByDemandeVisaIdOrderByIdAsc(idDemande);
+		boolean dossierComplet = dossiers.stream()
+				.filter(Dossier::isEstCoche)
+				.allMatch(dossier -> dossier.getPathFichier() != null && !dossier.getPathFichier().isBlank());
+		if (!dossierComplet) {
+			throw new IllegalStateException("Dossier incomplet");
+		}
+
+		demande.setEstVerrouille(true);
+		DemandeVisa savedDemande = demandeVisaRepository.save(demande);
+		TypeStatutDemande statut = typeStatutDemandeRepository.findByRang(2)
+				.orElseThrow(() -> new IllegalStateException("Statut rang 2 introuvable"));
+		StatutDemande statutDemande = new StatutDemande();
+		statutDemande.setDemande_visa(savedDemande);
+		statutDemande.setType_statut_demande(statut);
+		statutDemande.setDate_statut(java.time.LocalDate.now());
+		statutDemandeRepository.save(statutDemande);
+		return savedDemande;
+	}
+
+	private Path getDemandeUploadDir(Long idDemande) {
+		return Paths.get(uploadBaseDir, "demande-" + idDemande);
+	}
+
+	private String safeFileName(String fileName) {
+		if (fileName == null || fileName.isBlank()) {
+			return "fichier";
+		}
+		return Paths.get(fileName).getFileName().toString();
+	}
+
+	private void deleteExistingFile(String path) throws IOException {
+		if (path == null || path.isBlank()) {
+			return;
+		}
+		Path existing = Paths.get(path);
+		if (Files.exists(existing)) {
+			Files.delete(existing);
+		}
+	}
+
+	@Transactional
 	public void deleteDemandeVisa(Long id) {
 		if (!demandeVisaRepository.existsById(id)) {
 			throw new IllegalArgumentException("Demande introuvable");
 		}
+		statutDemandeRepository.deleteByDemandeVisaId(id);
 		dossierRepository.deleteByDemandeVisaId(id);
 		demandeVisaRepository.deleteById(id);
 	}
