@@ -11,7 +11,7 @@ public class StatutDemande {
     private Long id;
 
     @Column(nullable = false, unique = false)
-    private LocalDate date_changement_statut;
+    private LocalDate date_statut;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_demande_visa", nullable = false)
