@@ -104,8 +104,8 @@
 
     <div class="container">
         <div class="form-header">
-            <h1>Créer un Passeport</h1>
-            <p class="progress-indicator">Etape 1/3 : Informations du Passeport</p>
+            <h1>Completion des donees anterieurs</h1>
+            <p class="progress-indicator">Etape 1/3 : completion d'une demande</p>
         </div>
 
         <c:if test="${not empty error}">
@@ -124,7 +124,7 @@
                         <form:input path="nom" id="nom" placeholder="Entrez votre nom" required="true" />
                     </div>
                     <div class="form-group">
-                        <label for="prenom">Prénom<span style="color: red;">*</span></label>
+                        <label for="prenom">Prénom</span></label>
                         <form:input path="prenom" id="prenom" placeholder="Entrez votre prénom" required="true" />
                     </div>
                 </div>
@@ -157,8 +157,8 @@
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="email">Email<span style="color: red;">*</span></label>
-                        <form:input path="email" id="email" type="email" placeholder="email@exemple.com" required="true" />
+                        <label for="email">Email</span></label>
+                        <form:input path="email" id="email" type="email" placeholder="email@exemple.com" />
                     </div>
                     <div class="form-group">
                         <label for="numero_telephone">Numéro de Téléphone<span style="color: red;">*</span></label>

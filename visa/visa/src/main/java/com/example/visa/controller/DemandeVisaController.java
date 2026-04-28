@@ -69,19 +69,22 @@ public class DemandeVisaController {
             RedirectAttributes redirectAttributes) {
         
         if (selectedVisa == null || selectedVisa.isEmpty()) {
-            model.addAttribute("error", "Veuillez sélectionner un type de visa");
+            model.addAttribute("error", "Veuillez selectionner un type de visa");
             model.addAttribute("typesVisa", demandeVisaService.getAllTypesVisa());
             model.addAttribute("typeDemandeId", typeDemandeId);
             return "select-visa";
         }
 
         try {
-            // Redirection vers la page de confirmation
-            redirectAttributes.addFlashAttribute("successMessage", 
-                "Visa attaché avec succès au passeport de " + passeportPrenom + " " + passeportNom);
-            return "redirect:/";
+            Long typeVisaId = Long.parseLong(selectedVisa);
+            model.addAttribute("typeVisaId", typeVisaId);
+            model.addAttribute("typeDemandeId", typeDemandeId);
+            model.addAttribute("champsCommuns", demandeVisaService.getChampsCommuns());
+            model.addAttribute("champsSpecifiques", demandeVisaService.getChampsSpecifiques(typeVisaId));
+            
+            return "saisie-visa-dossiers";
         } catch (Exception e) {
-            model.addAttribute("error", "Erreur lors de l'attachement du visa: " + e.getMessage());
+            model.addAttribute("error", "Erreur lors de la preparation de la saisie: " + e.getMessage());
             model.addAttribute("typesVisa", demandeVisaService.getAllTypesVisa());
             model.addAttribute("typeDemandeId", typeDemandeId);
             return "select-visa";
@@ -134,7 +137,7 @@ public class DemandeVisaController {
         
         try {
             System.out.println("-> Appel de demandeVisaService.creerDemandeVisa()");
-            demandeVisaService.creerDemandeVisa(form);
+            demandeVisaService.creerDemandeVisa(form, (Long)form.getTypeDemandeId());
             System.out.println("-> Succes : Demande de visa creee en base de donnees.");
             redirectAttributes.addFlashAttribute("successMessage", "Les informations ont bien ete stockees.");
             return "redirect:/";

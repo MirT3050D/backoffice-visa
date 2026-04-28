@@ -121,7 +121,7 @@ public class DemandeVisaService {
 	}
 
 	@Transactional
-	public DemandeVisa creerDemandeVisa(CreerDemandeVisaForm form) {
+	public DemandeVisa creerDemandeVisa(CreerDemandeVisaForm form, Long typeDemandeId) {
 		Nationalite nationalite = nationaliteRepository.findById(form.getNationaliteId())
 				.orElseThrow(() -> new IllegalArgumentException("Nationalite introuvable"));
 
@@ -198,18 +198,24 @@ public class DemandeVisaService {
 			dossierRepository.save(dossierSpecifique);
 		}
 
-		creerStatutInitial(savedDemandeVisa);
+		int rang = 0;
+		if(typeDemandeId == 1L) { // si le type de demande est nouveau titre, alors le statut initial est "Creer"
+			rang = 1;
+		} else {
+			rang = 5; // sinon le statut initial est "Approuve"
+		}
+		creerStatutInitial(savedDemandeVisa, rang);
 
 		return savedDemandeVisa;
 	}
 
-	private void creerStatutInitial(DemandeVisa demande) {
-		TypeStatutDemande statutInitial = typeStatutDemandeRepository.findByRang(1)
-			.orElseThrow(() -> new IllegalStateException("Statut initial (rang 1) non trouve"));
+	private void creerStatutInitial(DemandeVisa demande, int rang) {
+		TypeStatutDemande statut = typeStatutDemandeRepository.findByRang(rang)
+			.orElseThrow(() -> new IllegalStateException("Statut rang " + rang + " introuvable"));
 		
 		StatutDemande statutDemande = new StatutDemande();
 		statutDemande.setDemande_visa(demande);
-		statutDemande.setType_statut_demande(statutInitial);
+		statutDemande.setType_statut_demande(statut);
 		statutDemande.setDate_statut(java.time.LocalDateTime.now().toLocalDate());
 		statutDemandeRepository.save(statutDemande);
 	}
