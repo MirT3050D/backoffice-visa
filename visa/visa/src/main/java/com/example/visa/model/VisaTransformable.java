@@ -10,6 +10,9 @@ public class VisaTransformable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = true, unique = false)
+    private String date_entre;    
+
     @Column(nullable = false, unique = true)
     private String numero_passport;
 
@@ -29,6 +32,14 @@ public class VisaTransformable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getDate_entre() {
+        return date_entre;
+    }
+
+    public void setDate_entre(String date_entre) {
+        this.date_entre = date_entre;
     }
 
     public String getNumero_passport() {

@@ -11,7 +11,7 @@ public class Passeport {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String numero_passport;
+    private String num_passeport;
 
     @Column(nullable = false, unique = false)
     private LocalDate date_expiration;
@@ -27,8 +27,8 @@ public class Passeport {
         return id;
     }
 
-    public String getNumero_passport() {
-        return numero_passport;
+    public String getNum_passeport() {
+        return num_passeport;
     }
 
     public LocalDate getDate_expiration() {
@@ -43,8 +43,8 @@ public class Passeport {
         return etatCivil;
     }
 
-    public void setNumero_passport(String numero_passport) {
-        this.numero_passport = numero_passport;
+    public void setNum_passeport(String num_passeport) {
+        this.num_passeport = num_passeport;
     }
 
     public void setDate_expiration(LocalDate date_expiration) {

@@ -35,9 +35,9 @@ CREATE TABLE ville(
 
 CREATE TABLE situation_familiale(
    Id SERIAL,
-   situation VARCHAR(50)  NOT NULL,
+   label VARCHAR(50)  NOT NULL,
    PRIMARY KEY(Id),
-   UNIQUE(situation)
+   UNIQUE(label)
 );
 
 CREATE TABLE nationalite(
@@ -81,13 +81,13 @@ CREATE TABLE champ_fournir_commune(
 CREATE TABLE etat_civil(
    Id SERIAL,
    nom VARCHAR(50)  NOT NULL,
-   prenoms VARCHAR(50) ,
+   prenom VARCHAR(50) ,
    nom_jeune_fille VARCHAR(50) ,
    mail VARCHAR(50) ,
    num_tel VARCHAR(50)  NOT NULL,
    date_naissance DATE NOT NULL,
    lieu_naissance VARCHAR(50) ,
-   adresse VARCHAR(50)  NOT NULL,
+   adresse_mada VARCHAR(50)  NOT NULL,
    Id_nationalite INTEGER NOT NULL,
    Id_situation_familiale INTEGER NOT NULL,
    PRIMARY KEY(Id),
@@ -97,22 +97,22 @@ CREATE TABLE etat_civil(
    FOREIGN KEY(Id_situation_familiale) REFERENCES situation_familiale(Id)
 );
 
-CREATE TABLE passport(
+CREATE TABLE passeport(
    Id SERIAL,
-   num_passport VARCHAR(50)  NOT NULL,
+   num_passeport VARCHAR(50)  NOT NULL,
    date_expiration VARCHAR(50)  NOT NULL,
-   date_delivrence DATE NOT NULL,
+   date_delivrance DATE NOT NULL,
    Id_etat_civil INTEGER NOT NULL,
    PRIMARY KEY(Id),
-   UNIQUE(num_passport),
+   UNIQUE(num_passeport),
    FOREIGN KEY(Id_etat_civil) REFERENCES etat_civil(Id)
 );
 
 CREATE TABLE visa_transformable(
    Id SERIAL,
-   date_entre DATE NOT NULL,
+   date_entre DATE,
    date_expiration DATE NOT NULL,
-   date_delivrence DATE NOT NULL,
+   date_delivrance DATE NOT NULL,
    Id_etat_civil INTEGER NOT NULL,
    PRIMARY KEY(Id),
    FOREIGN KEY(Id_etat_civil) REFERENCES etat_civil(Id)
@@ -121,11 +121,11 @@ CREATE TABLE visa_transformable(
 CREATE TABLE demande_visa(
    Id SERIAL,
    date_demande TIMESTAMP NOT NULL,
-   Id_passport INTEGER NOT NULL,
+   Id_passeport INTEGER NOT NULL,
    Id_type_visa INTEGER NOT NULL,
    Id_type_demande_visa INTEGER NOT NULL,
    PRIMARY KEY(Id),
-   FOREIGN KEY(Id_passport) REFERENCES passport(Id),
+   FOREIGN KEY(Id_passeport) REFERENCES passeport(Id),
    FOREIGN KEY(Id_type_visa) REFERENCES type_visa(Id),
    FOREIGN KEY(Id_type_demande_visa) REFERENCES type_demande_visa(Id)
 );
@@ -145,7 +145,7 @@ CREATE TABLE visa(
    num_visa VARCHAR(50)  NOT NULL,
    data_entre DATE NOT NULL,
    date_expiration DATE NOT NULL,
-   date_delivrence DATE NOT NULL,
+   date_delivrance DATE NOT NULL,
    Id_demande_visa INTEGER NOT NULL,
    Id_ville INTEGER NOT NULL,
    Id_etat_civil INTEGER NOT NULL,
@@ -197,9 +197,9 @@ CREATE TABLE carte_resident(
 CREATE TABLE historique_passeport_visa(
    Id SERIAL,
    date_historique TIMESTAMP NOT NULL,
-   Id_passport INTEGER NOT NULL,
+   Id_passeport INTEGER NOT NULL,
    Id_visa INTEGER NOT NULL,
    PRIMARY KEY(Id),
-   FOREIGN KEY(Id_passport) REFERENCES passport(Id),
+   FOREIGN KEY(Id_passeport) REFERENCES passeport(Id),
    FOREIGN KEY(Id_visa) REFERENCES visa(Id)
 );

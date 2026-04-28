@@ -9,9 +9,9 @@
         </div>
         <% 
             String requestURI = request.getRequestURI();
-            if (!requestURI.endsWith("index.jsp")) {
+            if (!requestURI.endsWith("/")) {
         %>
-            <a href="index.jsp" class="nav-back">Retour</a>
+            <a href="/" class="nav-back">Retour</a>
         <% } %>
     </div>
 </nav>
