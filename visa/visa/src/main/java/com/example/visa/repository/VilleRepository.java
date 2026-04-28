@@ -3,4 +3,6 @@ package com.example.visa.repository;
 import com.example.visa.model.Ville;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface VilleRepository extends JpaRepository<Ville, Long> {}
+public interface VilleRepository extends JpaRepository<Ville, Long> {
+	java.util.List<Ville> findAllByOrderByPaysLabelAscLabelAsc();
+}

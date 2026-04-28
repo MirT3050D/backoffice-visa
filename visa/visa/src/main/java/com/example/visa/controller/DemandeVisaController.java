@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.visa.dto.CreerDemandeVisaForm;
+import com.example.visa.dto.FinaliserSansDonneesForm;
 import com.example.visa.dto.PasseportForm;
 import com.example.visa.service.DemandeVisaService;
 
@@ -81,6 +82,7 @@ public class DemandeVisaController {
             model.addAttribute("typeDemandeId", typeDemandeId);
             model.addAttribute("champsCommuns", demandeVisaService.getChampsCommuns());
             model.addAttribute("champsSpecifiques", demandeVisaService.getChampsSpecifiques(typeVisaId));
+            model.addAttribute("villesParPays", demandeVisaService.getVillesParPays());
             
             return "saisie-visa-dossiers";
         } catch (Exception e) {
@@ -152,6 +154,49 @@ public class DemandeVisaController {
             System.out.println("-> ERREUR INATTENDUE : " + e.getMessage());
             e.printStackTrace();
             throw e;
+        }
+    }
+
+    @PostMapping("/finaliser-duplicata")
+    public String finaliserDuplicata(
+            @ModelAttribute("form") FinaliserSansDonneesForm form,
+            @ModelAttribute("passeportData") PasseportForm passeportForm,
+            RedirectAttributes redirectAttributes) {
+
+        if (form.getDateDemande() == null) {
+            form.setDateDemande(java.time.LocalDate.now());
+        }
+        
+        if (passeportForm != null) {
+            form.setNom(passeportForm.getNom());
+            form.setPrenom(passeportForm.getPrenom());
+            form.setNomJeuneFille(passeportForm.getNom_jeune_fille());
+            form.setEmail(passeportForm.getEmail());
+            form.setNumeroTelephone(passeportForm.getNumero_telephone());
+            form.setDateNaissance(passeportForm.getDate_naissance());
+            form.setLieuNaissance(passeportForm.getLieu_naissance());
+            form.setAdresseMada(passeportForm.getAdresse_mada());
+            form.setNationaliteId(passeportForm.getNationaliteId());
+            form.setSituationFamilialeId(passeportForm.getSituationFamiliale());
+            form.setNumeroPasseport(passeportForm.getNumero_passport());
+            form.setDateExpirationPasseport(passeportForm.getDate_expiration());
+            form.setDateDelivrancePasseport(passeportForm.getDate_delivrance());
+            form.setVisaTranNumPasseport(passeportForm.getVisaTranNumPasseport());
+            form.setVisaTranDateDelivrance(passeportForm.getVisaTranDateDelivrance());
+            form.setVisaTranDateExpiration(passeportForm.getVisaTranDateExpiration());
+        }
+
+        try {
+            System.out.println("-> Appel de demandeVisaService.creerDemandeDuplicatatSansDonnees()");
+            demandeVisaService.creerDemandeDuplicatatSansDonnees(form);
+            System.out.println("-> Succes : Demande de duplicata creee.");
+            redirectAttributes.addFlashAttribute("successMessage", "La demande de duplicata a bien ete enregistree.");
+            return "redirect:/";
+        } catch (Exception e) {
+            System.out.println("-> ERREUR : " + e.getMessage());
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de la creation du duplicata: " + e.getMessage());
+            return "redirect:/demande-visa/select-visa?type_demande_id=" + form.getTypeDemandeId();
         }
     }
 

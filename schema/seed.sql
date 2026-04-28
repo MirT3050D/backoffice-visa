@@ -13,7 +13,7 @@ INSERT INTO type_demande_visa (label) VALUES
 -- type_statut_demande (id, label, ordre_statut)
 INSERT INTO type_statut_demande (label, rang) VALUES
 ('Creer', 1),
-('Scanne', 2);
+('Scanne', 2),
 ('Approuve', 5);
 
 -- type_statut_visa
@@ -91,3 +91,20 @@ INSERT INTO situation_familiale (label) VALUES
 ('Marie(e)'),
 ('Divorce(e)'),
 ('Veuf(ve)');
+
+-- pays
+INSERT INTO pays (label) VALUES
+('Madagascar'),
+('France'),
+('Etats-Unis'),
+('Chine'),
+('Canada');
+
+-- ville
+INSERT INTO ville (label, id_pays) VALUES
+('Antananarivo', 1),
+('Toamasina', 1),
+('Fianarantsoa', 1),
+('Mahajanga', 1),
+('Toliara', 1),
+('Antsiranana', 1);

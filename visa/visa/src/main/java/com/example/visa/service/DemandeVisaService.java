@@ -97,6 +97,16 @@ public class DemandeVisaService {
 		return situtationFamilialeRepository.findAll();
 	}
 
+	public Map<String, List<Ville>> getVillesParPays() {
+		List<Ville> villes = villeRepository.findAllByOrderByPaysLabelAscLabelAsc();
+		Map<String, List<Ville>> grouped = new LinkedHashMap<>();
+		for (Ville ville : villes) {
+			String paysLabel = ville.getPays().getLabel();
+			grouped.computeIfAbsent(paysLabel, key -> new java.util.ArrayList<>()).add(ville);
+		}
+		return grouped;
+	}
+
 	 public Optional<DemandeVisa> getDemandeById(Long id) {
 		 return demandeVisaRepository.findById(id);
 	 }
@@ -249,8 +259,15 @@ public class DemandeVisaService {
         ancienVisa.setEtatCivil(demandeNouveauTitre.getPasseport().getEtatCivil());
         ancienVisa.setTypeVisa(demandeNouveauTitre.getType_visa());
         
-        // Attribution d'une ville par défaut ou basée sur un paramètre (Ici par défaut première ville)
-        Ville ville = villeRepository.findAll().stream().findFirst().orElseThrow(() -> new IllegalArgumentException("Aucune ville disponible en base."));
+		// Attribution de la ville depuis le formulaire si fournie, sinon première ville disponible
+		Ville ville = null;
+		if (form.getAncienVilleId() != null) {
+			ville = villeRepository.findById(form.getAncienVilleId())
+					.orElseThrow(() -> new IllegalArgumentException("Ville introuvable pour l'ancien visa."));
+		} else {
+			ville = villeRepository.findAll().stream().findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("Aucune ville disponible en base."));
+		}
         ancienVisa.setVille(ville);
         
         Visa savedAncienVisa = visaRepository.save(ancienVisa);

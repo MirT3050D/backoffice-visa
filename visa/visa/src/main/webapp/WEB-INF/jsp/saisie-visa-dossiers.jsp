@@ -44,7 +44,8 @@
         }
 
         .form-group input[type="text"],
-        .form-group input[type="date"] {
+        .form-group input[type="date"],
+        .form-group select {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
@@ -158,22 +159,38 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="numeroVisa">Numéro de Visa</label>
-                        <input type="text" id="numeroVisa" name="numeroVisa" required placeholder="Ex: VIS-2023-XXXX">
+                        <input type="text" id="numeroVisa" name="ancienNumeroVisa" required placeholder="Ex: VIS-2023-XXXX">
                     </div>
                     <div class="form-group">
-                        <label for="dateDelivrance">Date de Délivrance</label>
-                        <input type="date" id="dateDelivrance" name="dateDelivrance" required>
+                        <label for="dateDelivrance">Date de DÃ©livrance</label>
+                        <input type="date" id="dateDelivrance" name="ancienDateDelivrance" required>
                     </div>
                     <div class="form-group">
                         <label for="dateExpiration">Date d'Expiration</label>
-                        <input type="date" id="dateExpiration" name="dateExpiration" required>
+                        <input type="date" id="dateExpiration" name="ancienDateExpiration" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ancienVilleId">Ville de DÃ©livrance</label>
+                        <select id="ancienVilleId" name="ancienVilleId" required>
+                            <option value="">-- SÃ©lectionnez --</option>
+                            <c:forEach items="${villesParPays}" var="entry">
+                                <optgroup label="${entry.key}">
+                                    <c:forEach items="${entry.value}" var="ville">
+                                        <option value="${ville.id}">${ville.label}</option>
+                                    </c:forEach>
+                                </optgroup>
+                            </c:forEach>
+                        </select>
                     </div>
                 </div>
 
                 <div class="form-row">
                      <div class="form-group">
-                        <label for="numeroCarteResident">Numéro de Carte Résident (si existante)</label>
-                        <input type="text" id="numeroCarteResident" name="numeroCarteResident" placeholder="Ex: CR-2023-XXXX">
+                        <label for="numeroCarteResident">NumÃ©ro de Carte RÃ©sident (si existante)</label>
+                        <input type="text" id="numeroCarteResident" name="ancienNumeroCarteResident" placeholder="Ex: CR-2023-XXXX">
                     </div>
                 </div>
 
