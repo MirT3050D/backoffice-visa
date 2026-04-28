@@ -116,7 +116,7 @@
 ### Pseudo-code a mettre dans les fichiers backend
 
 - [ ] FormulaireService.java
-```java
+`java
 // Retourne les champs techniques d'une entite pour generation du formulaire front
 public List<ChampDefinition> extraireChamps(Class<?> entiteClass);
 
@@ -129,10 +129,10 @@ public List<ChampFournirCommuneDTO> getChampsFournirCommunsParTypeVisa(Long idTy
 
 // Retourne les champs dossiers specifiques selon le type de visa
 public List<ChampFournirSpecifiqueDTO> getChampsFournirSpecifiquesParTypeVisa(Long idTypeVisa);
-```
+`
 
 - [ ] EtatCivil.java (meme logique pour DTO EtatCivilDTO)
-```java
+`java
 public EtatCivil(String nom, LocalDate dateNaissance, String adresse, Long idNationalite, String numTel,
                  String prenoms, String mail, String nomJeuneFille) {
     // Controle obligatoire via setters appeles dans le constructeur
@@ -153,10 +153,10 @@ public void setNom(String nom) {
     this.nom = nom;
 }
 // setDateNaissance, setAdresse, setIdNationalite, setNumTel => meme principe obligatoire
-```
+`
 
 - [ ] DemandeVisaService.java
-```java
+`java
 @Transactional
 public DemandeVisa creerDemande(NouvelleDemandeDTO dto) {
     // 1) Construire EtatCivil via constructeur/setters (valide obligatoire)
@@ -169,19 +169,19 @@ public DemandeVisa creerDemande(NouvelleDemandeDTO dto) {
 }
 
 public List<DemandeVisaListDTO> listerToutesLesDemandes();
-```
+`
 
 - [ ] DemandeVisaController.java
-```java
+`java
 @PostMapping("/api/demandes")
 public ResponseEntity<DemandeVisaListDTO> creer(@RequestBody NouvelleDemandeDTO dto);
 
 @GetMapping("/api/demandes")
 public ResponseEntity<List<DemandeVisaListDTO>> lister();
-```
+`
 
 - [ ] FormulaireController.java
-```java
+`java
 @GetMapping("/api/formulaires/structure")
 public ResponseEntity<Map<String, List<ChampDefinition>>> structureBase();
 
@@ -190,7 +190,7 @@ public ResponseEntity<List<ChampFournirCommuneDTO>> champsFournirCommuns(@Reques
 
 @GetMapping("/api/formulaires/champs-fournir/specifiques")
 public ResponseEntity<List<ChampFournirSpecifiqueDTO>> champsFournirSpecifiques(@RequestParam Long idTypeVisa);
-```
+`
 ## Integration (Steeve)
 
 
@@ -265,3 +265,103 @@ fix:
 - Formulaire creation visa 
 
 ## Avec donnees anterieurs
+
+---
+
+# Sprint 3 : Finalisation et Scan (Scan Terminé)
+
+## Contexte
+
+L’opérateur a saisi la demande (Sprint 1) et a éventuellement géré les informations (Sprint 2).
+Il possède maintenant les documents physiques du demandeur.
+Il doit les numériser et les rattacher à chaque pièce justificative attendue.
+
+Une fois toutes les pièces scannées, l’opérateur verrouille le dossier : plus aucune modification possible sur la demande, le demandeur ou le passeport.
+Le statut de la demande passe alors de `Creer` à **`Scanne`**.
+
+## Objectif
+
+*   Ajouter la gestion des fichiers scannés (upload) par pièce justificative.
+*   Contrôler la complétude : un bouton pour finaliser le scan doit être disponible.
+*   Verrouillage des données après la finalisation du scan.
+*   Le statut de la demande passe à `Scanne`.
+
+---
+
+## Développeur 1 : Cœur Back-end & Données
+**Branche :** `sprint/3/feature/scan-backend-core`
+
+### 1. Base de données & Modèles
+
+*   **Évolutions de la base de données :**
+    *   Ajouter une colonne `path_fichier` (type `VARCHAR`) à la table `dossier`.
+    *   Ajouter une colonne `est_verrouille` (type `BOOLEAN`, `DEFAULT FALSE`) à la table `demande_visa`.
+*   **Modèles (Entity) :**
+    *   **Dossier.java**: Ajouter un champ `String pathFichier;`.
+    *   **DemandeVisa.java**: Ajouter un champ `boolean estVerrouille;`.
+
+### 2. Service (Logique métier)
+
+*   Créer ou modifier **`DemandeVisaService`** (ou un nouveau `ScanService`) :
+    *   `uploadPiece(Integer idDemande, Integer idChamp, Part fichier)`:
+        *   Sauvegarde le fichier sur le disque et met à jour l'entité `Dossier` avec le chemin.
+        *   Gère le remplacement si un fichier existe déjà.
+        *   Lève une exception si la demande est déjà verrouillée.
+    *   `verrouillerDemande(Integer idDemande)`:
+        *   Vérifie que le dossier est complet.
+        *   Passe `demande_visa.est_verrouille` à `true`.
+        *   Change le statut de la demande à `Scanne` (ID 2).
+    *   Modifier les méthodes de mise à jour existantes (ex: `updateDemande`, `editDemande`) pour vérifier si la demande est verrouillée.
+
+### 3. Controller (Endpoints)
+
+*   Créer ou modifier **`DemandeVisaController`** (ou un nouveau `ScanController`) :
+    *   `@PostMapping("/demande/{idDemande}/upload")`:
+        *   Reçoit le fichier et les ID nécessaires, puis appelle `service.uploadPiece()`.
+        *   Redirige vers la page de scan.
+    *   `@PostMapping("/demande/{idDemande}/verrouiller")`:
+        *   Appelle `service.verrouillerDemande()`.
+        *   Redirige vers la liste des demandes.
+    *   `@GetMapping("/demande/{idDemande}/files/{idChamp}")`:
+        *   Permet de télécharger une pièce déjà scannée.
+
+---
+
+## Développeur 2 : Front-end & Intégration
+**Branche :** `sprint/3/feature/scan-frontend-integration`
+
+### 1. Interface de Scan
+
+*   **Nouvelle Page : `scan-demande.jsp`**
+    *   Accessible via `@GetMapping("/demande/{id}/scan")` (à créer dans le contrôleur).
+    *   **Logique du contrôleur :**
+        *   Récupérer la demande, la liste des pièces (`dossier`), et calculer si le dossier est complet (`isDossierComplet`).
+        *   Passer ces informations au modèle.
+    *   **Vue (`.jsp`) :**
+        *   Afficher les informations de la demande.
+        *   Si la demande est verrouillée, afficher un bandeau et désactiver les formulaires.
+        *   Lister les pièces à fournir (`dossier` où `est_coche = true`).
+        *   Pour chaque pièce, afficher son état (fichier présent ou non) et le formulaire d'upload.
+*   **Bouton de finalisation :**
+    *   Créer le formulaire pointant vers `POST /demande/{idDemande}/verrouiller`.
+    *   Désactiver le bouton si le dossier n'est pas complet (basé sur la variable `isComplet` du modèle).
+    *   Ajouter une confirmation JavaScript au clic.
+
+### 2. Mise à jour des pages existantes
+
+*   **`list-demande-visa.jsp`**:
+    *   Afficher le statut "Scanné" pour les demandes concernées.
+    *   Ajouter un lien d'action vers la page de scan (`/demande/{id}/scan`).
+*   **`edit.jsp` / `detail.jsp`**:
+    *   Désactiver les champs et afficher un message clair si la demande est verrouillée (`demande.estVerrouille == true`).
+
+### 3. Tâches transverses
+
+*   Mettre à jour le script `schema/seed.sql` ou `data.sql` pour le nouveau statut `Scanne`.
+*   Configurer le chemin de stockage des uploads dans `application.properties`.
+*   S'assurer que le répertoire d'upload est bien dans le `.gitignore`.
+*   Gérer l'affichage des erreurs (ex: `DemandeVerrouilleeException`) côté front.
+
+
+
+
