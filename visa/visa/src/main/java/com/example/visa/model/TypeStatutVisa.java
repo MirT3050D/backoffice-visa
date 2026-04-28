@@ -12,6 +12,6 @@ public class TypeStatutVisa {
     private String label;
 
     @Column(nullable = false, unique = true)
-    private int ordre_statut;
+    private int rang;
     
 }

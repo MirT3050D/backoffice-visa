@@ -90,8 +90,8 @@ public class FrontController {
         form.setNom(demande.getPasseport().getEtatCivil().getNom());
         form.setPrenom(demande.getPasseport().getEtatCivil().getPrenom());
         form.setEmail(demande.getPasseport().getEtatCivil().getEmail());
-        form.setNumeroTelephone(demande.getPasseport().getEtatCivil().getNumero_telephone());
-        form.setNumeroPasseport(demande.getPasseport().getNumero_passport());
+        form.setNumeroTelephone(demande.getPasseport().getEtatCivil().getNum_tel());
+        form.setNumeroPasseport(demande.getPasseport().getNum_passeport());
         form.setDateDelivrancePasseport(demande.getPasseport().getDate_delivrance());
         form.setDateExpirationPasseport(demande.getPasseport().getDate_expiration());
 

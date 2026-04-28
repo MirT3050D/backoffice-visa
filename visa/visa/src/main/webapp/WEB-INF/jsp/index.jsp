@@ -49,7 +49,7 @@
                             <div class="card-footer">
                                 <c:choose>
                                     <c:when test="${typeDemande.id == 1}">
-                                        <a href="${pageContext.request.contextPath}/demande-visa/creer" class="btn btn-primary">Commencer</a>
+                                        <a href="${pageContext.request.contextPath}/demande-visa/visa-type-old?type_demande_id=${typeDemande.id}" class="btn btn-primary">Commencer</a>
                                     </c:when>
                                     <c:otherwise>
                                         <a href="${pageContext.request.contextPath}/demande-visa/visa-type?type_demande_id=${typeDemande.id}" class="btn btn-primary">Commencer</a>

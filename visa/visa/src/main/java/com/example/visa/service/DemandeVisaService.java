@@ -133,7 +133,7 @@ public class DemandeVisaService {
 		etatCivil.setPrenom(form.getPrenom());
 		etatCivil.setNom_jeune_fille(form.getNomJeuneFille());
 		etatCivil.setEmail(form.getEmail());
-		etatCivil.setNumero_telephone(form.getNumeroTelephone());
+		etatCivil.setNum_tel(form.getNumeroTelephone());
 		etatCivil.setDate_naissance(form.getDateNaissance());
 		etatCivil.setLieu_naissance(form.getLieuNaissance());
 		etatCivil.setAdresse_mada(form.getAdresseMada());
@@ -142,13 +142,14 @@ public class DemandeVisaService {
 		EtatCivil savedEtatCivil = etatCivilRepository.save(etatCivil);
 
 		Passeport passeport = new Passeport();
-		passeport.setNumero_passport(form.getNumeroPasseport());
+		passeport.setNum_passeport(form.getNumeroPasseport());
 		passeport.setDate_delivrance(form.getDateDelivrancePasseport());
 		passeport.setDate_expiration(form.getDateExpirationPasseport());
 		passeport.setEtatCivil(savedEtatCivil);
 		Passeport savedPasseport = passeportRepository.save(passeport);
 
 		VisaTransformable visaTransformable = new VisaTransformable();
+		visaTransformable.setDate_entre(null);
 		visaTransformable.setNumero_passport(form.getVisaTranNumPasseport());
 		visaTransformable.setDate_delivrance(form.getVisaTranDateDelivrance());
 		visaTransformable.setDate_expiration(form.getVisaTranDateExpiration());
@@ -209,9 +210,9 @@ public class DemandeVisaService {
 		 etatCivil.setNom(form.getNom());
 		 etatCivil.setPrenom(form.getPrenom());
 		 etatCivil.setEmail(form.getEmail());
-		 etatCivil.setNumero_telephone(form.getNumeroTelephone());
+		 etatCivil.setNum_tel(form.getNumeroTelephone());
 
-		 passeport.setNumero_passport(form.getNumeroPasseport());
+		 passeport.setNum_passeport(form.getNumeroPasseport());
 		 if (form.getDateDelivrancePasseport() != null) {
 			 passeport.setDate_delivrance(form.getDateDelivrancePasseport());
 		 }
