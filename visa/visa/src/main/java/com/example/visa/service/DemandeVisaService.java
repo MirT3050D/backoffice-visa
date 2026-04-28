@@ -343,20 +343,43 @@ public class DemandeVisaService {
 		DemandeVisa demande = demandeVisaRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
 
+		Passeport passeport = demande.getPasseport();
+		EtatCivil etatCivil = passeport.getEtatCivil();
 		etatCivil.setNom(form.getNom());
 		etatCivil.setPrenom(form.getPrenom());
 		etatCivil.setNom_jeune_fille(form.getNomJeuneFille());
 		etatCivil.setEmail(form.getEmail());
-		etatCivil.setNumero_telephone(form.getNumeroTelephone());
+		etatCivil.setNum_tel(form.getNumeroTelephone());
 		etatCivil.setDate_naissance(form.getDateNaissance());
 		etatCivil.setLieu_naissance(form.getLieuNaissance());
 		etatCivil.setAdresse_mada(form.getAdresseMada());
-		etatCivil.setNationalite(nationalite);
-		etatCivil.setSituation_familiale(situationFamiliale);
+		if (form.getNationaliteId() != null) {
+			Nationalite nationalite = nationaliteRepository.findById(form.getNationaliteId())
+					.orElseThrow(() -> new IllegalArgumentException("Nationalite introuvable"));
+			etatCivil.setNationalite(nationalite);
+		}
+		if (form.getSituationFamilialeId() != null) {
+			SitutationFamiliale situationFamiliale = situtationFamilialeRepository
+					.findById(form.getSituationFamilialeId())
+					.orElseThrow(() -> new IllegalArgumentException("Situation familiale introuvable"));
+			etatCivil.setSituation_familiale(situationFamiliale);
+		}
 
-		passeport.setNumero_passport(form.getNumeroPasseport());
+		passeport.setNum_passeport(form.getNumeroPasseport());
 		passeport.setDate_delivrance(form.getDateDelivrancePasseport());
 		passeport.setDate_expiration(form.getDateExpirationPasseport());
+
+		if (form.getTypeVisaId() != null) {
+			TypeVisa typeVisa = typeVisaRepository.findById(form.getTypeVisaId())
+					.orElseThrow(() -> new IllegalArgumentException("Type de visa introuvable"));
+			demande.setType_visa(typeVisa);
+		}
+
+		if (form.getTypeDemandeId() != null) {
+			TypeDemandeVisa typeDemande = typeDemandeVisaRepository.findById(form.getTypeDemandeId())
+					.orElseThrow(() -> new IllegalArgumentException("Type de demande introuvable"));
+			demande.setType_demande_visa(typeDemande);
+		}
 
 		VisaTransformable visaTransformable = visaTransformableRepository
 				.findFirstByEtatCivilId(etatCivil.getId())
@@ -395,6 +418,7 @@ public class DemandeVisaService {
 			dossierRepository.save(dossierCommun);
 		}
 
+		TypeVisa typeVisa = demande.getType_visa();
 		List<ChampFournirSpecifique> champsSpecifiques = champFournirSpecifiqueRepository.findByTypeVisaId(typeVisa.getId());
 		for (ChampFournirSpecifique champSpecifique : champsSpecifiques) {
 			Dossier dossierSpecifique = new Dossier();
