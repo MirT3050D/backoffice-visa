@@ -150,15 +150,22 @@ public class DemandeVisaService {
 	}
 
 	@Transactional
-	public DemandeVisa creerDemandeVisa(CreerDemandeVisaForm form, int statutInitialRang) {
+	public DemandeVisa creerDemandeVisa(CreerDemandeVisaForm form, Long idTypeDemande, int statutInitialRang) {
 		Nationalite nationalite = nationaliteRepository.findById(form.getNationaliteId())
 				.orElseThrow(() -> new IllegalArgumentException("Nationalite introuvable"));
 
 		SitutationFamiliale situationFamiliale = situtationFamilialeRepository.findById(form.getSituationFamilialeId())
 				.orElseThrow(() -> new IllegalArgumentException("Situation familiale introuvable"));
 
-		TypeDemandeVisa typeDemandeVisa = typeDemandeVisaRepository.findById(form.getTypeDemandeId())
-				.orElseThrow(() -> new IllegalArgumentException("Type de demande introuvable"));
+		
+		TypeDemandeVisa typeDemandeVisa = new TypeDemandeVisa();
+		if (idTypeDemande != null) {
+			typeDemandeVisa = typeDemandeVisaRepository.findById(idTypeDemande)
+					.orElseThrow(() -> new IllegalArgumentException("Type de demande introuvable"));
+		} else {
+			typeDemandeVisa = typeDemandeVisaRepository.findById(1L)
+					.orElseThrow(() -> new IllegalArgumentException("Type de demande 'Nouveau Titre' (id=1) introuvable"));
+		}
 
 		TypeVisa typeVisa = typeVisaRepository.findById(form.getTypeVisaId())
 				.orElseThrow(() -> new IllegalArgumentException("Type visa introuvable"));
@@ -247,7 +254,7 @@ public class DemandeVisaService {
     public DemandeVisa creerDemandeDuplicatatSansDonnees(FinaliserSansDonneesForm form) {
         // 1. Créer une demande classique pour la personne fictive: 
         // type 1 (Nouveau Titre), mais on force l'état initial à "Approuvé" (rang 5)
-        DemandeVisa demandeNouveauTitre = creerDemandeVisa(form , 5);
+        DemandeVisa demandeNouveauTitre = creerDemandeVisa(form, null, 5);
         
         // 2. Simulation de l'ancien visa à partir de cette demande fictive approuvée
         Visa ancienVisa = new Visa();
