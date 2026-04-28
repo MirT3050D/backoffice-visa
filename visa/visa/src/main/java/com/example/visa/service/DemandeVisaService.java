@@ -195,47 +195,47 @@ public class DemandeVisaService {
 		return savedDemandeVisa;
 	}
 
-	 @Transactional
-	 public DemandeVisa updateDemandeVisa(Long id, DemandeVisaEditForm form) {
-		 DemandeVisa demande = demandeVisaRepository.findById(id)
-				 .orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+	@Transactional
+	public DemandeVisa updateDemandeVisa(Long id, DemandeVisaEditForm form) {
+		DemandeVisa demande = demandeVisaRepository.findById(id)
+				.orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
 
-		 if (form.getDateDemande() != null) {
-			 demande.setDate_demande(form.getDateDemande());
-		 }
+		if (form.getDateDemande() != null) {
+			demande.setDate_demande(form.getDateDemande());
+		}
 
-		 Passeport passeport = demande.getPasseport();
-		 EtatCivil etatCivil = passeport.getEtatCivil();
+		Passeport passeport = demande.getPasseport();
+		EtatCivil etatCivil = passeport.getEtatCivil();
 
-		 etatCivil.setNom(form.getNom());
-		 etatCivil.setPrenom(form.getPrenom());
-		 etatCivil.setEmail(form.getEmail());
-		 etatCivil.setNum_tel(form.getNumeroTelephone());
+		etatCivil.setNom(form.getNom());
+		etatCivil.setPrenom(form.getPrenom());
+		etatCivil.setEmail(form.getEmail());
+		etatCivil.setNum_tel(form.getNumeroTelephone());
 
-		 passeport.setNum_passeport(form.getNumeroPasseport());
-		 if (form.getDateDelivrancePasseport() != null) {
-			 passeport.setDate_delivrance(form.getDateDelivrancePasseport());
-		 }
-		 if (form.getDateExpirationPasseport() != null) {
-			 passeport.setDate_expiration(form.getDateExpirationPasseport());
-		 }
+		passeport.setNum_passeport(form.getNumeroPasseport());
+		if (form.getDateDelivrancePasseport() != null) {
+			passeport.setDate_delivrance(form.getDateDelivrancePasseport());
+		}
+		if (form.getDateExpirationPasseport() != null) {
+			passeport.setDate_expiration(form.getDateExpirationPasseport());
+		}
 
-		 etatCivilRepository.save(etatCivil);
-		 passeportRepository.save(passeport);
-		 return demandeVisaRepository.save(demande);
-	 }
+		etatCivilRepository.save(etatCivil);
+		passeportRepository.save(passeport);
+		return demandeVisaRepository.save(demande);
+	}
 
-	 @Transactional
-	 public void deleteDemandeVisa(Long id) {
-		 if (!demandeVisaRepository.existsById(id)) {
-			 throw new IllegalArgumentException("Demande introuvable");
-		 }
-		 dossierRepository.deleteByDemandeVisaId(id);
-		 demandeVisaRepository.deleteById(id);
-	 }
+	@Transactional
+	public void deleteDemandeVisa(Long id) {
+		if (!demandeVisaRepository.existsById(id)) {
+			throw new IllegalArgumentException("Demande introuvable");
+		}
+		dossierRepository.deleteByDemandeVisaId(id);
+		demandeVisaRepository.deleteById(id);
+	}
 
-	 public List<DemandeVisa> getAllDemandes() {
-		 return demandeVisaRepository.findAll();
-	 }
+	public List<DemandeVisa> getAllDemandes() {
+		return demandeVisaRepository.findAll();
+	}
 
 }
