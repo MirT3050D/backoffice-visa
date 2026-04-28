@@ -26,6 +26,8 @@ public class DemandeVisaService {
 	private final DossierRepository dossierRepository;
 	private final ChampFournirCommuneRepository champFournirCommuneRepository;
 	private final ChampFournirSpecifiqueRepository champFournirSpecifiqueRepository;
+	private final TypeStatutDemandeRepository typeStatutDemandeRepository;
+	private final StatutDemandeRepository statutDemandeRepository;
 
 	public DemandeVisaService(
 			DemandeVisaRepository demandeVisaRepository,
@@ -38,7 +40,9 @@ public class DemandeVisaService {
 			VisaTransformableRepository visaTransformableRepository,
 			DossierRepository dossierRepository,
 			ChampFournirCommuneRepository champFournirCommuneRepository,
-			ChampFournirSpecifiqueRepository champFournirSpecifiqueRepository) {
+			ChampFournirSpecifiqueRepository champFournirSpecifiqueRepository,
+			TypeStatutDemandeRepository typeStatutDemandeRepository,
+			StatutDemandeRepository statutDemandeRepository) {
 		this.demandeVisaRepository = demandeVisaRepository;
 		this.etatCivilRepository = etatCivilRepository;
 		this.passeportRepository = passeportRepository;
@@ -50,6 +54,8 @@ public class DemandeVisaService {
 		this.dossierRepository = dossierRepository;
 		this.champFournirCommuneRepository = champFournirCommuneRepository;
 		this.champFournirSpecifiqueRepository = champFournirSpecifiqueRepository;
+		this.typeStatutDemandeRepository = typeStatutDemandeRepository;
+		this.statutDemandeRepository = statutDemandeRepository;
 	}
 
 	public List<TypeVisa> getAllTypesVisa() {
@@ -192,7 +198,20 @@ public class DemandeVisaService {
 			dossierRepository.save(dossierSpecifique);
 		}
 
+		creerStatutInitial(savedDemandeVisa);
+
 		return savedDemandeVisa;
+	}
+
+	private void creerStatutInitial(DemandeVisa demande) {
+		TypeStatutDemande statutInitial = typeStatutDemandeRepository.findByRang(1)
+			.orElseThrow(() -> new IllegalStateException("Statut initial (rang 1) non trouve"));
+		
+		StatutDemande statutDemande = new StatutDemande();
+		statutDemande.setDemande_visa(demande);
+		statutDemande.setType_statut_demande(statutInitial);
+		statutDemande.setDate_statut(java.time.LocalDateTime.now().toLocalDate());
+		statutDemandeRepository.save(statutDemande);
 	}
 
 	@Transactional
