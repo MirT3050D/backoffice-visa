@@ -35,9 +35,9 @@ CREATE TABLE ville(
 
 CREATE TABLE situation_familiale(
    Id SERIAL,
-   situation VARCHAR(50)  NOT NULL,
+   label VARCHAR(50)  NOT NULL,
    PRIMARY KEY(Id),
-   UNIQUE(situation)
+   UNIQUE(label)
 );
 
 CREATE TABLE nationalite(
@@ -81,7 +81,7 @@ CREATE TABLE champ_fournir_commune(
 CREATE TABLE etat_civil(
    Id SERIAL,
    nom VARCHAR(50)  NOT NULL,
-   prenoms VARCHAR(50) ,
+   prenom VARCHAR(50) ,
    nom_jeune_fille VARCHAR(50) ,
    mail VARCHAR(50) ,
    num_tel VARCHAR(50)  NOT NULL,

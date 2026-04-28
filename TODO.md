@@ -251,3 +251,17 @@ Base: Liste des tables a utiliser pour le metier
   dossier
   duplicata
   transfert_visa
+
+fix:
+- fix column prenom -> prenoms in etat_civil
+## Sans donnees anterieurs
+### Duplicata
+- Manisy champ visa transformable durant creation de demande
+- Formulaire creation visa
+
+### Transfer de visa
+- Manisy champ visa transformable durant creation de demande
+- Ajouter un formulaire de creation
+- Formulaire creation visa 
+
+## Avec donnees anterieurs

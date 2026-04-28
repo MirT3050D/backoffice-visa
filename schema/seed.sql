@@ -11,9 +11,13 @@ INSERT INTO type_demande_visa (label) VALUES
 ('Transfert de visa');
 
 -- type_statut_demande (id, label, ordre_statut)
-INSERT INTO type_statut_demande (label, ordre_statut) VALUES
+INSERT INTO type_statut_demande (label, rang) VALUES
 ('Creer', 1),
 ('Scanne', 2);
+
+-- type_statut_visa
+INSERT INTO type_statut_visa (label, rang) VALUES
+('Approuve', 5);
 
 -- champ_fournir_commune
 -- Tous ce qui est genre de papier physique, vont avoir un type boolean

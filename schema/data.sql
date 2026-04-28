@@ -1,7 +1,7 @@
 -- Assurez-vous que les types de base sont déjà insérés (via seed.sql)
 
 -- 1. Insérer un état civil
-INSERT INTO etat_civil (nom, prenoms, mail, num_tel, date_naissance, lieu_naissance, adresse, Id_nationalite, Id_situation_familiale) VALUES
+INSERT INTO etat_civil (nom, prenom, mail, num_tel, date_naissance, lieu_naissance, adresse, Id_nationalite, Id_situation_familiale) VALUES
 ('Dupont', 'Jean', 'jean.dupont@email.com', '0123456789', '1990-05-15', 'Paris', '123 Rue de la Paix, Paris', 
  (SELECT Id FROM nationalite WHERE label = 'Francais'), 
  (SELECT Id FROM situation_familiale WHERE label = 'Celibataire'))
