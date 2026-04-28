@@ -209,6 +209,27 @@
                 </div>
             </div>
 
+            <!-- Section Visa Transformable -->
+            <div class="form-section" style="border-left: 4px solid #28a745;">
+                <h3 style="color: #28a745;">Informations du Visa Transformable</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="visaTranNumPasseport">Numéro du Visa / Passeport<span style="color: red;">*</span></label>
+                        <form:input path="visaTranNumPasseport" id="visaTranNumPasseport" placeholder="Ex: VT98765" required="true" />
+                    </div>
+                    <div class="form-group">
+                        <label for="visaTranDateDelivrance">Date de Délivrance (Visa)<span style="color: red;">*</span></label>
+                        <form:input path="visaTranDateDelivrance" id="visaTranDateDelivrance" type="date" required="true" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="visaTranDateExpiration">Date d'Expiration (Visa)<span style="color: red;">*</span></label>
+                    <form:input path="visaTranDateExpiration" id="visaTranDateExpiration" type="date" required="true" />
+                </div>
+            </div>
+
             <form:hidden path="typeDemandeId" />
 
             <div class="btn-group">
