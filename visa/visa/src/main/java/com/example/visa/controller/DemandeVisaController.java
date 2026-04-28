@@ -114,7 +114,7 @@ public class DemandeVisaController {
     @GetMapping("/creer")
     public String creerDemandeVisa(Model model) {
         model.addAttribute("form", new CreerDemandeVisaForm());
-        return "creer_demande_visa";
+        return "visa-form-a-remplir";
     }
 
     @PostMapping("/creer")

@@ -23,7 +23,7 @@ public class EtatCivil {
     private String email;
 
     @Column(unique = true, nullable = false, length = 50)
-    private String numero_telephone;
+    private String num_tel;
 
     @Column(unique = false, nullable = false, length = 150)
     private LocalDate date_naissance;   
@@ -62,8 +62,8 @@ public class EtatCivil {
         return email;
     }
 
-    public String getNumero_telephone() {
-        return numero_telephone;
+    public String getNum_tel() {
+        return num_tel;
     }
 
     public LocalDate getDate_naissance() {
@@ -102,8 +102,8 @@ public class EtatCivil {
         this.email = email;
     }
 
-    public void setNumero_telephone(String numero_telephone) {
-        this.numero_telephone = numero_telephone;
+    public void setNum_tel(String num_tel) {
+        this.num_tel = num_tel;
     }
 
     public void setDate_naissance(LocalDate date_naissance) {
