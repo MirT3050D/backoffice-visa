@@ -15,6 +15,47 @@
             align-items: center;
         }
 
+        .search-panel {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: end;
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            border: 1px solid #e5e5e5;
+            border-radius: 0.75rem;
+            background-color: #fafafa;
+        }
+
+        .search-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .search-field label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .search-field select,
+        .search-field input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background-color: #fff;
+        }
+
+        .search-hint {
+            grid-column: 1 / -1;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
         .search-wrapper {
             position: relative;
             display: flex;
@@ -132,6 +173,27 @@
                     <div class="flash-box flash-error">${errorMessage}</div>
                 </c:if>
 
+                <form class="search-panel" action="/demande-visa/recherche-duplicata" method="GET">
+                    <div class="search-fields">
+                        <div class="search-field">
+                            <label for="rechercheType">Type de recherche</label>
+                            <select id="rechercheType" name="rechercheType">
+                                <option value="demande">Reference demande</option>
+                                <option value="passeport">Reference passeport</option>
+                            </select>
+                        </div>
+                        <div class="search-field">
+                            <label for="rechercheValeur">Reference</label>
+                            <input type="text" id="rechercheValeur" name="rechercheValeur" placeholder="Ex: DEM-2026-0001 ou P123456" required>
+                        </div>
+                        <p class="search-hint">Pour la recherche par passeport, la reference est verifiee sur le passeport le plus recent lie au visa (historique).</p>
+                    </div>
+                    <div class="btn-group" style="margin-top: 0; justify-content: flex-start;">
+                        <button type="submit" class="btn btn-secondary">Rechercher</button>
+                        <a href="/demande-visa/visa-type?type_demande_id=2" class="btn btn-secondary">Sans donnees anterieures</a>
+                    </div>
+                </form>
+
                 <div class="search-section">
                     <div class="search-wrapper">
                         <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -139,7 +201,6 @@
                         </svg>
                         <input type="text" id="searchInput" class="search-input" placeholder="Rechercher par ID, date, type...">
                     </div>
-                    <a href="/demande-visa/visa-type?type_demande_id=1" class="btn btn-secondary">Sans données intérieures</a>
                 </div>
 
 
