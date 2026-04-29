@@ -275,14 +275,19 @@
                                     <strong>${visaResult.demandeVisa.id}</strong>
                                 </div>
                             </div>
-                            <c:if test="${typeDemandeId != 3}">
-                                <div class="btn-group" style="justify-content: flex-start; margin-top: 1.5rem;">
-                                    <form action="/demande-visa/dupliquer-visa" method="POST">
-                                        <input type="hidden" name="visa_id" value="${visaResult.id}" />
-                                        <button type="submit" class="btn btn-secondary">Creer la carte resident dupliquee</button>
-                                    </form>
-                                </div>
-                            </c:if>
+                            <div class="btn-group" style="justify-content: flex-start; margin-top: 1.5rem;">
+                                <c:choose>
+                                    <c:when test="${typeDemandeId == 3}">
+                                        <a href="/demande-visa/nouveau-passeport?type_demande_id=3&visa_id=${visaResult.id}" class="btn btn-secondary">Continuer avec nouveau passeport</a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <form action="/demande-visa/dupliquer-visa" method="POST">
+                                            <input type="hidden" name="visa_id" value="${visaResult.id}" />
+                                            <button type="submit" class="btn btn-secondary">Creer la carte resident dupliquee</button>
+                                        </form>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
                         </div>
                     </c:when>
                     <c:when test="${not empty searchValue}">

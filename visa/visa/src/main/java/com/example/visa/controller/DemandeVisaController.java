@@ -14,8 +14,10 @@ import com.example.visa.dto.CreerDemandeVisaForm;
 import com.example.visa.dto.FinaliserSansDonneesForm;
 import com.example.visa.dto.FinaliserTransfertSansDonneesForm;
 import com.example.visa.dto.PasseportForm;
+import com.example.visa.dto.TransfertResult;
 import com.example.visa.service.DemandeVisaService;
 import com.example.visa.model.CarteResident;
+import com.example.visa.model.Passeport;
 
 @Controller
 @RequestMapping("/demande-visa")
@@ -121,9 +123,11 @@ public class DemandeVisaController {
     public String nouveauPasseport(
             @RequestParam(value = "type_demande_id", required = false) Long typeDemandeId,
             @RequestParam(value = "type_visa_id", required = false) Long typeVisaId,
+            @RequestParam(value = "visa_id", required = false) Long visaId,
             Model model) {
         model.addAttribute("typeDemandeId", typeDemandeId);
         model.addAttribute("typeVisaId", typeVisaId);
+        model.addAttribute("visaId", visaId);
         return "nouveau-passeport";
     }
 
@@ -270,16 +274,39 @@ public class DemandeVisaController {
 
         try {
             System.out.println("-> Appel de demandeVisaService.creerDemandeTransfertSansDonnees()");
-            demandeVisaService.creerDemandeTransfertSansDonnees(form);
+            TransfertResult result = demandeVisaService.creerDemandeTransfertSansDonnees(form);
             System.out.println("-> Succes : Demande de transfert creee.");
             redirectAttributes.addFlashAttribute("successMessage", "La demande de transfert a bien ete enregistree.");
-            return "redirect:/";
+            return "redirect:/demande-visa/transfert-result?visa_id=" + result.getVisaId()
+                    + "&passeport_id=" + result.getPasseportId();
         } catch (Exception e) {
             System.out.println("-> ERREUR : " + e.getMessage());
             e.printStackTrace();
             redirectAttributes.addFlashAttribute("error", "Erreur lors de la creation du transfert: " + e.getMessage());
             return "redirect:/demande-visa/nouveau-passeport?type_demande_id=" + form.getTypeDemandeId()
                     + "&type_visa_id=" + form.getTypeVisaId();
+        }
+    }
+
+    @PostMapping("/transfert-avec-donnees")
+    public String transfertAvecDonnees(
+            @RequestParam("visa_id") Long visaId,
+            @RequestParam("nouveauNumeroPasseport") String nouveauNumeroPasseport,
+            @RequestParam("nouveauDateDelivrance") java.time.LocalDate nouveauDateDelivrance,
+            @RequestParam("nouveauDateExpiration") java.time.LocalDate nouveauDateExpiration,
+            RedirectAttributes redirectAttributes) {
+        try {
+            Passeport nouveauPasseport = demandeVisaService.creerTransfertAvecDonnees(
+                    visaId,
+                    nouveauNumeroPasseport,
+                    nouveauDateDelivrance,
+                    nouveauDateExpiration);
+            redirectAttributes.addFlashAttribute("successMessage", "Transfert cree avec succes.");
+            return "redirect:/demande-visa/transfert-result?visa_id=" + visaId
+                    + "&passeport_id=" + nouveauPasseport.getId();
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Erreur lors du transfert: " + e.getMessage());
+            return "redirect:/demande-visa/nouveau-passeport?type_demande_id=3&visa_id=" + visaId;
         }
     }
 
@@ -339,5 +366,18 @@ public class DemandeVisaController {
                     model.addAttribute("errorMessage", "Carte resident introuvable.");
                     return "duplicata-result";
                 });
+    }
+
+    @GetMapping("/transfert-result")
+    public String afficherTransfertResultat(
+            @RequestParam("visa_id") Long visaId,
+            @RequestParam("passeport_id") Long passeportId,
+            Model model) {
+        model.addAttribute("visaResult", demandeVisaService.getVisaById(visaId).orElse(null));
+        model.addAttribute("nouveauPasseport", demandeVisaService.getPasseportById(passeportId).orElse(null));
+        if (model.getAttribute("visaResult") == null || model.getAttribute("nouveauPasseport") == null) {
+            model.addAttribute("errorMessage", "Resultat introuvable pour le transfert.");
+        }
+        return "transfert-result";
     }
 }

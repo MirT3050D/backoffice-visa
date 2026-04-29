@@ -99,7 +99,15 @@
         </div>
 
         <div class="form-container">
-            <form action="/demande-visa/finaliser-transfert" method="POST">
+            <c:choose>
+                <c:when test="${not empty visaId}">
+                    <form action="/demande-visa/transfert-avec-donnees" method="POST">
+                        <input type="hidden" name="visa_id" value="${visaId}" />
+                </c:when>
+                <c:otherwise>
+                    <form action="/demande-visa/finaliser-transfert" method="POST">
+                </c:otherwise>
+            </c:choose>
                 <input type="hidden" name="typeDemandeId" value="${typeDemandeId}" />
                 <input type="hidden" name="typeVisaId" value="${typeVisaId}" />
 
