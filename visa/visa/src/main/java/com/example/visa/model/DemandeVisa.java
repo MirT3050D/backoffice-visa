@@ -25,6 +25,9 @@ public class DemandeVisa {
     @JoinColumn(name = "id_passeport", nullable = false)
     private Passeport passeport;
 
+    @Column(name = "est_verrouille", nullable = false)
+    private boolean estVerrouille;
+
     public Long getId() {
         return id;
     }
@@ -45,6 +48,10 @@ public class DemandeVisa {
         return passeport;
     }
 
+    public boolean isEstVerrouille() {
+        return estVerrouille;
+    }
+
     public void setDate_demande(LocalDate date_demande) {
         this.date_demande = date_demande;
     }
@@ -59,5 +66,9 @@ public class DemandeVisa {
 
     public void setPasseport(Passeport passeport) {
         this.passeport = passeport;
+    }
+
+    public void setEstVerrouille(boolean estVerrouille) {
+        this.estVerrouille = estVerrouille;
     }
 }

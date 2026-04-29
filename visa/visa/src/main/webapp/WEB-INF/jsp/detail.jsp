@@ -34,6 +34,10 @@
                     <p class="subtitle">Consultation des informations de la demande</p>
                 </div>
 
+                <c:if test="${demande.estVerrouille}">
+                    <div class="flash-box flash-success">Demande verrouillee (scan termine).</div>
+                </c:if>
+
                 <c:if test="${not empty successMessage}">
                     <div class="flash-box flash-success">${successMessage}</div>
                 </c:if>
@@ -57,7 +61,7 @@
                         <div class="detail-item"><span>Nom</span><strong>${demande.passeport.etatCivil.nom}</strong></div>
                         <div class="detail-item"><span>Prenom</span><strong>${demande.passeport.etatCivil.prenom}</strong></div>
                         <div class="detail-item"><span>Email</span><strong>${demande.passeport.etatCivil.email}</strong></div>
-                        <div class="detail-item"><span>Telephone</span><strong>${demande.passeport.etatCivil.numero_telephone}</strong></div>
+                        <div class="detail-item"><span>Telephone</span><strong>${demande.passeport.etatCivil.num_tel}</strong></div>
                         <div class="detail-item"><span>Nationalite</span><strong>${demande.passeport.etatCivil.nationalite.label}</strong></div>
                         <div class="detail-item"><span>Situation familiale</span><strong>${demande.passeport.etatCivil.situation_familiale.label}</strong></div>
                     </div>
@@ -66,7 +70,7 @@
                 <section class="detail-card">
                     <h2>Passeport</h2>
                     <div class="detail-grid">
-                        <div class="detail-item"><span>Numero passeport</span><strong>${demande.passeport.numero_passport}</strong></div>
+                        <div class="detail-item"><span>Numero passeport</span><strong>${demande.passeport.num_passeport}</strong></div>
                         <div class="detail-item"><span>Date delivrance</span><strong>${demande.passeport.date_delivrance}</strong></div>
                         <div class="detail-item"><span>Date expiration</span><strong>${demande.passeport.date_expiration}</strong></div>
                     </div>
@@ -117,18 +121,25 @@
                 <div class="detail-actions">
                     <a class="btn btn-secondary" href="${pageContext.request.contextPath}/list">Retour a la liste</a>
                     <div class="row-actions">
-                        <a class="row-action row-action-edit" href="${pageContext.request.contextPath}/list/${demande.id}/edit" title="Editer">
+                        <a class="row-action row-action-edit" href="${pageContext.request.contextPath}/demande/${demande.id}/scan" title="Scanner">
                             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.33H5v-.92l9.06-9.06.92.92L5.92 19.58zM20.71 7.04a1.003 1.003 0 000-1.42l-2.34-2.34a1.003 1.003 0 00-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/>
+                                <path d="M4 4h16v4H4V4zm2 6h12v8H6v-8zm2 2v4h8v-4H8zm9-6h3v2h-3V6z"/>
                             </svg>
                         </a>
-                        <form method="post" action="${pageContext.request.contextPath}/list/${demande.id}/delete" class="delete-form" onsubmit="return confirm('Supprimer cette demande ?');">
-                            <button class="row-action row-action-delete" type="submit" title="Supprimer">
+                        <c:if test="${!demande.estVerrouille}">
+                            <a class="row-action row-action-edit" href="${pageContext.request.contextPath}/list/${demande.id}/edit" title="Editer">
                                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path d="M6 7h12v2H6V7zm2 3h8l-1 10H9L8 10zm3-6h2l1 1h4v2H6V5h4l1-1z"/>
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.33H5v-.92l9.06-9.06.92.92L5.92 19.58zM20.71 7.04a1.003 1.003 0 000-1.42l-2.34-2.34a1.003 1.003 0 00-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/>
                                 </svg>
-                            </button>
-                        </form>
+                            </a>
+                            <form method="post" action="${pageContext.request.contextPath}/list/${demande.id}/delete" class="delete-form" onsubmit="return confirm('Supprimer cette demande ?');">
+                                <button class="row-action row-action-delete" type="submit" title="Supprimer">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                        <path d="M6 7h12v2H6V7zm2 3h8l-1 10H9L8 10zm3-6h2l1 1h4v2H6V5h4l1-1z"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </c:if>
                     </div>
                 </div>
             </main>

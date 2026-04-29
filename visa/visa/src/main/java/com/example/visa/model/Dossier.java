@@ -12,6 +12,9 @@ public class Dossier {
     @Column(nullable = false, name = "est_coche")
     private boolean estCoche;
 
+    @Column(name = "path_fichier")
+    private String pathFichier;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_demande_visa", nullable = false)
     private DemandeVisa demandeVisa;
@@ -38,6 +41,14 @@ public class Dossier {
 
     public void setEstCoche(boolean estCoche) {
         this.estCoche = estCoche;
+    }
+
+    public String getPathFichier() {
+        return pathFichier;
+    }
+
+    public void setPathFichier(String pathFichier) {
+        this.pathFichier = pathFichier;
     }
 
     public DemandeVisa getDemandeVisa() {

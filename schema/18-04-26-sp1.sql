@@ -124,6 +124,7 @@ CREATE TABLE demande_visa(
    Id_passeport INTEGER NOT NULL,
    Id_type_visa INTEGER NOT NULL,
    Id_type_demande_visa INTEGER NOT NULL,
+   est_verrouille BOOLEAN NOT NULL DEFAULT FALSE,
    PRIMARY KEY(Id),
    FOREIGN KEY(Id_passeport) REFERENCES passeport(Id),
    FOREIGN KEY(Id_type_visa) REFERENCES type_visa(Id),
@@ -171,6 +172,7 @@ CREATE TABLE statut_visa(
 CREATE TABLE dossier(
    Id SERIAL,
    est_coche BOOLEAN NOT NULL,
+   path_fichier VARCHAR(255),
    Id_demande_visa INTEGER NOT NULL,
    Id_champ_fournir_specifique INTEGER,
    Id_champ_fournir_commune INTEGER,

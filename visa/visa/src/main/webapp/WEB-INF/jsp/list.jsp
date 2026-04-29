@@ -129,6 +129,7 @@
                                 <th>Date Demande</th>
                                 <th>Type Demande</th>
                                 <th>Type Visa</th>
+                                <th>Statut</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -136,7 +137,7 @@
                             <c:choose>
                                 <c:when test="${empty demandes}">
                                     <tr>
-                                        <td colspan="5" class="table-empty">Aucune demande enregistree pour le moment.</td>
+                                        <td colspan="6" class="table-empty">Aucune demande enregistree pour le moment.</td>
                                     </tr>
                                 </c:when>
                                 <c:otherwise>
@@ -146,8 +147,14 @@
                                             <td>${demande.date_demande}</td>
                                             <td>${demande.type_demande_visa.label}</td>
                                             <td>${demande.type_visa.label}</td>
+                                            <td>${statutLabels[demande.id]}</td>
                                             <td>
                                                 <div class="row-actions">
+                                                    <a class="row-action row-action-edit" href="${pageContext.request.contextPath}/demande/${demande.id}/scan" title="Scanner">
+                                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                            <path d="M4 4h16v4H4V4zm2 6h12v8H6v-8zm2 2v4h8v-4H8zm9-6h3v2h-3V6z"/>
+                                                        </svg>
+                                                    </a>
                                                     <a class="row-action row-action-edit" href="${pageContext.request.contextPath}/list/${demande.id}/edit" title="Editer">
                                                         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                                                             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.33H5v-.92l9.06-9.06.92.92L5.92 19.58zM20.71 7.04a1.003 1.003 0 000-1.42l-2.34-2.34a1.003 1.003 0 00-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/>
