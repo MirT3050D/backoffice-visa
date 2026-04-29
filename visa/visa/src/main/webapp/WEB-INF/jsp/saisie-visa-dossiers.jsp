@@ -147,7 +147,14 @@
     <div class="container">
         <div class="form-header">
             <h1>Saisie du Visa & Documents Fournis</h1>
-            <p class="progress-indicator">Etape 3/3 : Finalisation</p>
+            <c:choose>
+                <c:when test="${typeDemandeId == 3}">
+                    <p class="progress-indicator">Etape 3/4 : Dossiers et ancien visa</p>
+                </c:when>
+                <c:otherwise>
+                    <p class="progress-indicator">Etape 3/3 : Finalisation</p>
+                </c:otherwise>
+            </c:choose>
         </div>
 
         <div class="form-container">
@@ -222,7 +229,14 @@
                 </c:if>
 
                 <div class="btn-group">
-                    <button type="submit" class="btn btn-primary">Valider et Créer le Duplicata</button>
+                    <c:choose>
+                        <c:when test="${typeDemandeId == 3}">
+                            <a href="/demande-visa/nouveau-passeport?type_demande_id=${typeDemandeId}&type_visa_id=${typeVisaId}" class="btn btn-primary" style="text-decoration: none;">Continuer vers le nouveau passeport</a>
+                        </c:when>
+                        <c:otherwise>
+                            <button type="submit" class="btn btn-primary">Valider et Créer le Duplicata</button>
+                        </c:otherwise>
+                    </c:choose>
                     <a href="/demande-visa/select-visa?type_demande_id=${typeDemandeId}" class="btn btn-secondary" style="text-decoration: none;">Retour</a>
                 </div>
             </form>

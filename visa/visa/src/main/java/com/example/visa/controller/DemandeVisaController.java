@@ -116,6 +116,16 @@ public class DemandeVisaController {
         return "visa-recap";
     }
 
+    @GetMapping("/nouveau-passeport")
+    public String nouveauPasseport(
+            @RequestParam(value = "type_demande_id", required = false) Long typeDemandeId,
+            @RequestParam(value = "type_visa_id", required = false) Long typeVisaId,
+            Model model) {
+        model.addAttribute("typeDemandeId", typeDemandeId);
+        model.addAttribute("typeVisaId", typeVisaId);
+        return "nouveau-passeport";
+    }
+
     @GetMapping("/creer")
     public String creerDemandeVisa(Model model) {
         model.addAttribute("form", new CreerDemandeVisaForm());
