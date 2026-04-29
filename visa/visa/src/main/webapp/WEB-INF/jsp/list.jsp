@@ -77,6 +77,73 @@
             background-color: #e8e8e8;
             border-color: #bbb;
         }
+
+        .status-cell {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .status-current {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .status-history {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 0.35rem 0.75rem;
+            background: #fff;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+        }
+
+        .status-history summary {
+            cursor: pointer;
+            list-style: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        .status-history summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .status-history summary::after {
+            content: "▼";
+            font-size: 0.6rem;
+            color: #64748b;
+            transform: translateY(-1px);
+        }
+
+        .status-history[open] summary::after {
+            content: "▲";
+        }
+
+        .status-history-list {
+            margin-top: 0.5rem;
+            display: grid;
+            gap: 0.35rem;
+            min-width: 200px;
+            padding-top: 0.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .status-history-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        .status-history-date {
+            color: #64748b;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -129,6 +196,7 @@
                                 <th>Date Demande</th>
                                 <th>Type Demande</th>
                                 <th>Type Visa</th>
+                                <th>Statut</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -136,7 +204,7 @@
                             <c:choose>
                                 <c:when test="${empty demandes}">
                                     <tr>
-                                        <td colspan="5" class="table-empty">Aucune demande enregistree pour le moment.</td>
+                                        <td colspan="6" class="table-empty">Aucune demande enregistree pour le moment.</td>
                                     </tr>
                                 </c:when>
                                 <c:otherwise>
@@ -147,7 +215,37 @@
                                             <td>${demande.type_demande_visa.label}</td>
                                             <td>${demande.type_visa.label}</td>
                                             <td>
+                                                <div class="status-cell">
+                                                    <span class="status-current">${statutLabels[demande.id]}</span>
+                                                    <details class="status-history">
+                                                        <summary>Historique</summary>
+                                                        <div class="status-history-list">
+                                                            <c:choose>
+                                                                <c:when test="${empty statutHistory[demande.id]}">
+                                                                    <div class="status-history-item">
+                                                                        <span>Aucun historique</span>
+                                                                    </div>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <c:forEach var="statut" items="${statutHistory[demande.id]}">
+                                                                        <div class="status-history-item">
+                                                                            <span>${statut.label}</span>
+                                                                            <span class="status-history-date">${statut.date}</span>
+                                                                        </div>
+                                                                    </c:forEach>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </div>
+                                                    </details>
+                                                </div>
+                                            </td>
+                                            <td>
                                                 <div class="row-actions">
+                                                    <a class="row-action row-action-edit" href="${pageContext.request.contextPath}/demande/${demande.id}/scan" title="Scanner">
+                                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                            <path d="M4 4h16v4H4V4zm2 6h12v8H6v-8zm2 2v4h8v-4H8zm9-6h3v2h-3V6z"/>
+                                                        </svg>
+                                                    </a>
                                                     <a class="row-action row-action-edit" href="${pageContext.request.contextPath}/list/${demande.id}/edit" title="Editer">
                                                         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                                                             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.33H5v-.92l9.06-9.06.92.92L5.92 19.58zM20.71 7.04a1.003 1.003 0 000-1.42l-2.34-2.34a1.003 1.003 0 00-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/>
@@ -226,7 +324,7 @@
             });
 
             // Prevent action clicks from triggering row click
-            var actionElements = document.querySelectorAll('.row-action, .delete-form');
+            var actionElements = document.querySelectorAll('.row-action, .delete-form, .status-history, .status-history summary');
             actionElements.forEach(function (element) {
                 element.addEventListener('click', function (event) {
                     event.stopPropagation();

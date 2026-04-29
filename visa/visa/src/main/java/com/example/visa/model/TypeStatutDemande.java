@@ -14,5 +14,25 @@ public class TypeStatutDemande {
 
     @Column(nullable = false, unique = true)
     private int rang;
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public int getRang() {
+        return rang;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public void setRang(int rang) {
+        this.rang = rang;
+    }
     
 }

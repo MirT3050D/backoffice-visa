@@ -147,11 +147,18 @@
     <div class="container">
         <div class="form-header">
             <h1>Saisie du Visa & Documents Fournis</h1>
-            <p class="progress-indicator">Etape 3/3 : Finalisation</p>
+            <c:choose>
+                <c:when test="${typeDemandeId == 3}">
+                    <p class="progress-indicator">Etape 3/4 : Dossiers et ancien visa</p>
+                </c:when>
+                <c:otherwise>
+                    <p class="progress-indicator">Etape 3/3 : Finalisation</p>
+                </c:otherwise>
+            </c:choose>
         </div>
 
         <div class="form-container">
-            <form action="/demande-visa/finaliser-duplicata" method="POST">
+            <form action="${typeDemandeId == 3 ? '/demande-visa/prepare-transfert' : '/demande-visa/finaliser-duplicata'}" method="POST">
                 <input type="hidden" name="typeVisaId" value="${typeVisaId}" />
                 <input type="hidden" name="typeDemandeId" value="${typeDemandeId}" />
 
@@ -222,7 +229,14 @@
                 </c:if>
 
                 <div class="btn-group">
-                    <button type="submit" class="btn btn-primary">Valider et Créer le Duplicata</button>
+                    <c:choose>
+                        <c:when test="${typeDemandeId == 3}">
+                            <button type="submit" class="btn btn-primary">Continuer vers le nouveau passeport</button>
+                        </c:when>
+                        <c:otherwise>
+                            <button type="submit" class="btn btn-primary">Valider et Créer le Duplicata</button>
+                        </c:otherwise>
+                    </c:choose>
                     <a href="/demande-visa/select-visa?type_demande_id=${typeDemandeId}" class="btn btn-secondary" style="text-decoration: none;">Retour</a>
                 </div>
             </form>
