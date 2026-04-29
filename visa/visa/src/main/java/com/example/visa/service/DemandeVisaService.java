@@ -2,6 +2,7 @@ package com.example.visa.service;
 import com.example.visa.dto.CreerDemandeVisaForm;
 import com.example.visa.dto.DemandeVisaEditForm;
 import com.example.visa.dto.FinaliserSansDonneesForm;
+import com.example.visa.dto.FinaliserTransfertSansDonneesForm;
 import com.example.visa.model.*;
 import com.example.visa.repository.*;
 import jakarta.transaction.Transactional;
@@ -337,6 +338,89 @@ public class DemandeVisaService {
         // Retourner la demande finale (Le Duplicata)
         return savedDemandeDuplicata;
     }
+
+	@Transactional
+	public DemandeVisa creerDemandeTransfertSansDonnees(FinaliserTransfertSansDonneesForm form) {
+		// 1. Créer une demande fictive approuvée (Nouveau Titre) pour générer l'ancien visa
+		DemandeVisa demandeNouveauTitre = creerDemandeVisa(form, null, 5);
+
+		// 2. Simulation de l'ancien visa à partir de cette demande fictive approuvée
+		Visa ancienVisa = new Visa();
+		ancienVisa.setNumVisa(form.getAncienNumeroVisa());
+		ancienVisa.setDataEntre(java.time.LocalDate.now());
+		ancienVisa.setDateDelivrance(form.getAncienDateDelivrance());
+		ancienVisa.setDateExpiration(form.getAncienDateExpiration());
+		ancienVisa.setDemandeVisa(demandeNouveauTitre);
+		ancienVisa.setEtatCivil(demandeNouveauTitre.getPasseport().getEtatCivil());
+		ancienVisa.setTypeVisa(demandeNouveauTitre.getType_visa());
+
+		Ville ville = null;
+		if (form.getAncienVilleId() != null) {
+			ville = villeRepository.findById(form.getAncienVilleId())
+					.orElseThrow(() -> new IllegalArgumentException("Ville introuvable pour l'ancien visa."));
+		} else {
+			ville = villeRepository.findAll().stream().findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("Aucune ville disponible en base."));
+		}
+		ancienVisa.setVille(ville);
+
+		Visa savedAncienVisa = visaRepository.save(ancienVisa);
+
+		// 3. Statut de ce visa (Approuve = 5)
+		TypeStatutVisa typeStatutVisaApprouve = typeStatutVisaRepository.findByRang(5.0)
+				.orElseThrow(() -> new IllegalStateException("Type Statut Visa rang 5.0 introuvable"));
+		StatutVisa statutVisa = new StatutVisa();
+		statutVisa.setVisa(savedAncienVisa);
+		statutVisa.setTypeStatutVisa(typeStatutVisaApprouve);
+		statutVisa.setDateStatut(java.time.LocalDateTime.now());
+		statutVisaRepository.save(statutVisa);
+
+		// 4. Lier l'ancien passeport et le visa via l'historique
+		HistoriquePasseportVisa historiqueAncien = new HistoriquePasseportVisa();
+		historiqueAncien.setPasseport(demandeNouveauTitre.getPasseport());
+		historiqueAncien.setVisa(savedAncienVisa);
+		historiqueAncien.setDateHistorique(java.time.LocalDateTime.now());
+		historiquePasseportVisaRepository.save(historiqueAncien);
+
+		// 5. Enregistrer l'ancienne Carte Resident (optionnel)
+		if (form.getAncienNumeroCarteResident() != null && !form.getAncienNumeroCarteResident().trim().isEmpty()) {
+			CarteResident ancienneCarte = new CarteResident();
+			ancienneCarte.setNum(form.getAncienNumeroCarteResident());
+			ancienneCarte.setVisa(savedAncienVisa);
+			carteResidentRepository.save(ancienneCarte);
+		}
+
+		// 6. Inserer le nouveau passeport et le lier au meme etat civil
+		Passeport nouveauPasseport = new Passeport();
+		nouveauPasseport.setNum_passeport(form.getNouveauNumeroPasseport());
+		nouveauPasseport.setDate_delivrance(form.getNouveauDateDelivrance());
+		nouveauPasseport.setDate_expiration(form.getNouveauDateExpiration());
+		nouveauPasseport.setEtatCivil(demandeNouveauTitre.getPasseport().getEtatCivil());
+		Passeport savedNouveauPasseport = passeportRepository.save(nouveauPasseport);
+
+		// 7. Lier le nouveau passeport au visa cree via l'historique
+		HistoriquePasseportVisa historiqueNouveau = new HistoriquePasseportVisa();
+		historiqueNouveau.setPasseport(savedNouveauPasseport);
+		historiqueNouveau.setVisa(savedAncienVisa);
+		historiqueNouveau.setDateHistorique(java.time.LocalDateTime.now());
+		historiquePasseportVisaRepository.save(historiqueNouveau);
+
+		// 8. Créer la 2eme Demande: TYPE TRANSFERT (id=3L) liee au nouveau passeport
+		TypeDemandeVisa typeDemandeTransfert = typeDemandeVisaRepository.findById(3L)
+				.orElseThrow(() -> new IllegalArgumentException("Type demande Transfert (id=3) introuvable"));
+
+		DemandeVisa demandeTransfert = new DemandeVisa();
+		demandeTransfert.setDate_demande(java.time.LocalDate.now());
+		demandeTransfert.setPasseport(savedNouveauPasseport);
+		demandeTransfert.setType_visa(demandeNouveauTitre.getType_visa());
+		demandeTransfert.setType_demande_visa(typeDemandeTransfert);
+
+		DemandeVisa savedDemandeTransfert = demandeVisaRepository.save(demandeTransfert);
+
+		creerStatutInitial(savedDemandeTransfert, 5);
+
+		return savedDemandeTransfert;
+	}
 
 	@Transactional
 	public DemandeVisa updateDemandeVisa(Long id, DemandeVisaEditForm form) {

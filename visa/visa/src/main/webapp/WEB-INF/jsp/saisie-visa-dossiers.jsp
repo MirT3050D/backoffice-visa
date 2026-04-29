@@ -158,7 +158,7 @@
         </div>
 
         <div class="form-container">
-            <form action="/demande-visa/finaliser-duplicata" method="POST">
+            <form action="${typeDemandeId == 3 ? '/demande-visa/prepare-transfert' : '/demande-visa/finaliser-duplicata'}" method="POST">
                 <input type="hidden" name="typeVisaId" value="${typeVisaId}" />
                 <input type="hidden" name="typeDemandeId" value="${typeDemandeId}" />
 
@@ -231,7 +231,7 @@
                 <div class="btn-group">
                     <c:choose>
                         <c:when test="${typeDemandeId == 3}">
-                            <a href="/demande-visa/nouveau-passeport?type_demande_id=${typeDemandeId}&type_visa_id=${typeVisaId}" class="btn btn-primary" style="text-decoration: none;">Continuer vers le nouveau passeport</a>
+                            <button type="submit" class="btn btn-primary">Continuer vers le nouveau passeport</button>
                         </c:when>
                         <c:otherwise>
                             <button type="submit" class="btn btn-primary">Valider et Créer le Duplicata</button>

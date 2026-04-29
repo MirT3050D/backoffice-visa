@@ -12,13 +12,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.visa.dto.CreerDemandeVisaForm;
 import com.example.visa.dto.FinaliserSansDonneesForm;
+import com.example.visa.dto.FinaliserTransfertSansDonneesForm;
 import com.example.visa.dto.PasseportForm;
 import com.example.visa.service.DemandeVisaService;
 
 
 @Controller
 @RequestMapping("/demande-visa")
-@SessionAttributes("passeportData")
+@SessionAttributes({"passeportData", "transfertData"})
 public class DemandeVisaController {
     private final DemandeVisaService demandeVisaService;
 
@@ -126,6 +127,21 @@ public class DemandeVisaController {
         return "nouveau-passeport";
     }
 
+    @PostMapping("/prepare-transfert")
+    public String preparerTransfert(
+            @ModelAttribute("form") FinaliserSansDonneesForm form,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        try {
+            model.addAttribute("transfertData", form);
+            return "redirect:/demande-visa/nouveau-passeport?type_demande_id=" + form.getTypeDemandeId()
+                    + "&type_visa_id=" + form.getTypeVisaId();
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de la preparation du transfert: " + e.getMessage());
+            return "redirect:/demande-visa/select-visa?type_demande_id=" + form.getTypeDemandeId();
+        }
+    }
+
     @GetMapping("/creer")
     public String creerDemandeVisa(Model model) {
         model.addAttribute("form", new CreerDemandeVisaForm());
@@ -207,6 +223,63 @@ public class DemandeVisaController {
             e.printStackTrace();
             redirectAttributes.addFlashAttribute("error", "Erreur lors de la creation du duplicata: " + e.getMessage());
             return "redirect:/demande-visa/select-visa?type_demande_id=" + form.getTypeDemandeId();
+        }
+    }
+
+    @PostMapping("/finaliser-transfert")
+    public String finaliserTransfert(
+            @ModelAttribute("form") FinaliserTransfertSansDonneesForm form,
+            @ModelAttribute("passeportData") PasseportForm passeportForm,
+            @ModelAttribute("transfertData") FinaliserSansDonneesForm transfertData,
+            RedirectAttributes redirectAttributes) {
+
+        if (form.getDateDemande() == null) {
+            form.setDateDemande(java.time.LocalDate.now());
+        }
+
+        if (passeportForm != null) {
+            form.setNom(passeportForm.getNom());
+            form.setPrenom(passeportForm.getPrenom());
+            form.setNomJeuneFille(passeportForm.getNom_jeune_fille());
+            form.setEmail(passeportForm.getEmail());
+            form.setNumeroTelephone(passeportForm.getNumero_telephone());
+            form.setDateNaissance(passeportForm.getDate_naissance());
+            form.setLieuNaissance(passeportForm.getLieu_naissance());
+            form.setAdresseMada(passeportForm.getAdresse_mada());
+            form.setNationaliteId(passeportForm.getNationaliteId());
+            form.setSituationFamilialeId(passeportForm.getSituationFamiliale());
+            form.setNumeroPasseport(passeportForm.getNumero_passport());
+            form.setDateExpirationPasseport(passeportForm.getDate_expiration());
+            form.setDateDelivrancePasseport(passeportForm.getDate_delivrance());
+            form.setVisaTranNumPasseport(passeportForm.getVisaTranNumPasseport());
+            form.setVisaTranDateDelivrance(passeportForm.getVisaTranDateDelivrance());
+            form.setVisaTranDateExpiration(passeportForm.getVisaTranDateExpiration());
+        }
+
+        if (transfertData != null) {
+            form.setAncienNumeroVisa(transfertData.getAncienNumeroVisa());
+            form.setAncienDateDelivrance(transfertData.getAncienDateDelivrance());
+            form.setAncienDateExpiration(transfertData.getAncienDateExpiration());
+            form.setAncienVilleId(transfertData.getAncienVilleId());
+            form.setAncienNumeroCarteResident(transfertData.getAncienNumeroCarteResident());
+            form.setTypeVisaId(transfertData.getTypeVisaId());
+            form.setTypeDemandeId(transfertData.getTypeDemandeId());
+            form.setChampsCommunsCoches(transfertData.getChampsCommunsCoches());
+            form.setChampsSpecifiquesCoches(transfertData.getChampsSpecifiquesCoches());
+        }
+
+        try {
+            System.out.println("-> Appel de demandeVisaService.creerDemandeTransfertSansDonnees()");
+            demandeVisaService.creerDemandeTransfertSansDonnees(form);
+            System.out.println("-> Succes : Demande de transfert creee.");
+            redirectAttributes.addFlashAttribute("successMessage", "La demande de transfert a bien ete enregistree.");
+            return "redirect:/";
+        } catch (Exception e) {
+            System.out.println("-> ERREUR : " + e.getMessage());
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de la creation du transfert: " + e.getMessage());
+            return "redirect:/demande-visa/nouveau-passeport?type_demande_id=" + form.getTypeDemandeId()
+                    + "&type_visa_id=" + form.getTypeVisaId();
         }
     }
 
