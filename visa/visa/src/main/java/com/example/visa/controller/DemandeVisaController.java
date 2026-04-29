@@ -15,7 +15,7 @@ import com.example.visa.dto.FinaliserSansDonneesForm;
 import com.example.visa.dto.FinaliserTransfertSansDonneesForm;
 import com.example.visa.dto.PasseportForm;
 import com.example.visa.service.DemandeVisaService;
-
+import com.example.visa.model.CarteResident;
 
 @Controller
 @RequestMapping("/demande-visa")
@@ -214,10 +214,10 @@ public class DemandeVisaController {
 
         try {
             System.out.println("-> Appel de demandeVisaService.creerDemandeDuplicatatSansDonnees()");
-            demandeVisaService.creerDemandeDuplicatatSansDonnees(form);
+            CarteResident carte = demandeVisaService.creerDemandeDuplicatatSansDonnees(form);
             System.out.println("-> Succes : Demande de duplicata creee.");
             redirectAttributes.addFlashAttribute("successMessage", "La demande de duplicata a bien ete enregistree.");
-            return "redirect:/";
+            return "redirect:/demande-visa/duplicata-result?carte_id=" + carte.getId();
         } catch (Exception e) {
             System.out.println("-> ERREUR : " + e.getMessage());
             e.printStackTrace();
@@ -284,8 +284,60 @@ public class DemandeVisaController {
     }
 
     @GetMapping("/list")
-    public String listDemandes(Model model) {
-        model.addAttribute("demandes", demandeVisaService.getAllDemandes());
+    public String listDemandes(@RequestParam(value = "type_demande_id", required = false) Long typeDemandeId,
+            Model model) {
+        model.addAttribute("typeDemandeId", typeDemandeId);
         return "list-demande-visa";
+    }
+
+    @GetMapping("/recherche-duplicata")
+    public String rechercheDuplicata(
+            @RequestParam("rechercheType") String rechercheType,
+            @RequestParam("rechercheValeur") String rechercheValeur,
+            @RequestParam(value = "type_demande_id", required = false) Long typeDemandeId,
+            Model model) {
+        model.addAttribute("typeDemandeId", typeDemandeId);
+        model.addAttribute("searchType", rechercheType);
+        model.addAttribute("searchValue", rechercheValeur);
+
+        return demandeVisaService.rechercherVisaPourDuplicata(rechercheType, rechercheValeur)
+                .map(visa -> {
+                    model.addAttribute("visaResult", visa);
+                    return "list-demande-visa";
+                })
+                .orElseGet(() -> {
+                    model.addAttribute("errorMessage", "Aucun visa correspondant trouve.");
+                    return "list-demande-visa";
+                });
+    }
+
+    @PostMapping("/dupliquer-visa")
+    public String dupliquerVisa(
+            @RequestParam("visa_id") Long visaId,
+            RedirectAttributes redirectAttributes) {
+        try {
+            CarteResident carte = demandeVisaService.creerDuplicataAvecDonnees(visaId);
+            redirectAttributes.addFlashAttribute("successMessage", "Carte resident dupliquee avec succes.");
+            return "redirect:/demande-visa/duplicata-result?carte_id=" + carte.getId();
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Erreur lors de la duplication: " + e.getMessage());
+            return "redirect:/demande-visa/list";
+        }
+    }
+
+    @GetMapping("/duplicata-result")
+    public String afficherDuplicataResultat(
+            @RequestParam("carte_id") Long carteId,
+            Model model) {
+        return demandeVisaService.getCarteResidentById(carteId)
+                .map(carte -> {
+                    model.addAttribute("carteResident", carte);
+                    model.addAttribute("visaResult", carte.getVisa());
+                    return "duplicata-result";
+                })
+                .orElseGet(() -> {
+                    model.addAttribute("errorMessage", "Carte resident introuvable.");
+                    return "duplicata-result";
+                });
     }
 }

@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.data.domain.PageRequest;
+
 @Service
 public class DemandeVisaService {
 	private final DemandeVisaRepository demandeVisaRepository;
@@ -110,6 +112,25 @@ public class DemandeVisaService {
 			grouped.computeIfAbsent(paysLabel, key -> new java.util.ArrayList<>()).add(ville);
 		}
 		return grouped;
+	}
+
+	public Optional<Visa> rechercherVisaPourDuplicata(String rechercheType, String rechercheValeur) {
+		if (rechercheValeur == null || rechercheValeur.trim().isEmpty()) {
+			return Optional.empty();
+		}
+
+		if ("passeport".equalsIgnoreCase(rechercheType)) {
+			List<HistoriquePasseportVisa> historiques = historiquePasseportVisaRepository
+					.findLatestByPasseportNumero(rechercheValeur.trim(), PageRequest.of(0, 1));
+			return historiques.isEmpty() ? Optional.empty() : Optional.of(historiques.get(0).getVisa());
+		}
+
+		try {
+			Long demandeId = Long.parseLong(rechercheValeur.trim());
+			return visaRepository.findFirstByDemandeVisaId(demandeId);
+		} catch (NumberFormatException e) {
+			return Optional.empty();
+		}
 	}
 
 	 public Optional<DemandeVisa> getDemandeById(Long id) {
@@ -259,8 +280,8 @@ public class DemandeVisaService {
 		statutDemandeRepository.save(statutDemande);
 	}
 
-    @Transactional
-    public DemandeVisa creerDemandeDuplicatatSansDonnees(FinaliserSansDonneesForm form) {
+	@Transactional
+	public CarteResident creerDemandeDuplicatatSansDonnees(FinaliserSansDonneesForm form) {
         // 1. Créer une demande classique pour la personne fictive: 
         // type 1 (Nouveau Titre), mais on force l'état initial à "Approuvé" (rang 5)
         DemandeVisa demandeNouveauTitre = creerDemandeVisa(form, null, 5);
@@ -335,9 +356,36 @@ public class DemandeVisaService {
         nouvelleCarte.setVisa(savedAncienVisa);
         carteResidentRepository.save(nouvelleCarte);
 
-        // Retourner la demande finale (Le Duplicata)
-        return savedDemandeDuplicata;
+        // Retourner la carte dupliquee
+        return nouvelleCarte;
     }
+
+	@Transactional
+	public CarteResident creerDuplicataAvecDonnees(Long visaId) {
+		Visa visa = visaRepository.findById(visaId)
+				.orElseThrow(() -> new IllegalArgumentException("Visa introuvable"));
+		CarteResident nouvelleCarte = new CarteResident();
+		nouvelleCarte.setNum("CR-DUP-" + System.currentTimeMillis());
+		nouvelleCarte.setVisa(visa);
+
+		TypeDemandeVisa typeDemandeDuplicata = typeDemandeVisaRepository.findById(2L)
+				.orElseThrow(() -> new IllegalArgumentException("Type demande Duplicata (id=2) introuvable"));
+
+		DemandeVisa demandeDuplicata = new DemandeVisa();
+		demandeDuplicata.setDate_demande(java.time.LocalDate.now());
+		demandeDuplicata.setPasseport(visa.getDemandeVisa().getPasseport());
+		demandeDuplicata.setType_visa(visa.getTypeVisa());
+		demandeDuplicata.setType_demande_visa(typeDemandeDuplicata);
+
+		DemandeVisa savedDemandeDuplicata = demandeVisaRepository.save(demandeDuplicata);
+		creerStatutInitial(savedDemandeDuplicata, 5);
+
+		return carteResidentRepository.save(nouvelleCarte);
+	}
+
+	public Optional<CarteResident> getCarteResidentById(Long carteId) {
+		return carteResidentRepository.findById(carteId);
+	}
 
 	@Transactional
 	public DemandeVisa creerDemandeTransfertSansDonnees(FinaliserTransfertSansDonneesForm form) {
