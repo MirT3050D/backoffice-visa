@@ -60,6 +60,7 @@
                     <div class="detail-grid">
                         <div class="detail-item"><span>Nom</span><strong>${demande.passeport.etatCivil.nom}</strong></div>
                         <div class="detail-item"><span>Prenom</span><strong>${demande.passeport.etatCivil.prenom}</strong></div>
+                        <div class="detail-item"><span>Date de naissance</span><strong>${demande.passeport.etatCivil.date_naissance}</strong></div>
                         <div class="detail-item"><span>Email</span><strong>${demande.passeport.etatCivil.email}</strong></div>
                         <div class="detail-item"><span>Telephone</span><strong>${demande.passeport.etatCivil.num_tel}</strong></div>
                         <div class="detail-item"><span>Nationalite</span><strong>${demande.passeport.etatCivil.nationalite.label}</strong></div>

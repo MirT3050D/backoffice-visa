@@ -1,3 +1,4 @@
+
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
@@ -166,7 +167,7 @@
                                                 <a class="btn btn-secondary" href="${pageContext.request.contextPath}/demande/${demande.id}/files/${dossierId}">Telecharger</a>
                                             </c:if>
                                             <input type="file" name="fichier_${dossierId}" ${demande.estVerrouille ? 'disabled' : ''}>
-                                            <button class="btn btn-secondary" type="submit" ${demande.estVerrouille ? 'disabled' : ''}>Uploader</button>
+                                            <button class="btn btn-secondary" type="submit" name="singleDossierId" value="${dossierId}" ${demande.estVerrouille ? 'disabled' : ''}>Uploader</button>
                                         </div>
                                     </div>
                                 </c:forEach>

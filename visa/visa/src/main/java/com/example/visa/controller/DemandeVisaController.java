@@ -324,7 +324,7 @@ public class DemandeVisaController {
     }
 
     @GetMapping("/list")
-    public String listDemandes(Model model) {
+    public String listDemandes(Model model, @RequestParam(value = "type_demande_id", required = false) Long typeDemandeId) {
         List<DemandeVisa> demandes = demandeVisaService.getAllDemandes();
         Map<Long, String> statutLabels = new HashMap<>();
         for (DemandeVisa demande : demandes) {

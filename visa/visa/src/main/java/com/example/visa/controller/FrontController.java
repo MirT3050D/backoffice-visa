@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Comparator;
 import java.util.Set;
+import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
 @Controller
@@ -70,11 +71,13 @@ public class FrontController {
 
     @GetMapping("/list")
     public String list(Model model) {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         List<DemandeVisa> demandes = demandeVisaRepository.findAll()
                 .stream()
                 .sorted(Comparator.comparing(DemandeVisa::getId, Comparator.nullsLast(Comparator.reverseOrder())))
                 .toList();
         Map<Long, String> statutLabels = new HashMap<>();
+        Map<Long, List<Map<String, String>>> statutHistory = new HashMap<>();
         for (DemandeVisa demande : demandes) {
             String label = statutDemandeRepository
                     .findLatestByDemandeVisaId(demande.getId(), PageRequest.of(0, 1))
@@ -84,10 +87,25 @@ public class FrontController {
                     .map(type -> type.getLabel())
                     .orElse("Creer");
             statutLabels.put(demande.getId(), label);
+            List<Map<String, String>> historyItems = statutDemandeRepository
+                .findByDemandeVisaIdOrderByDateStatutDesc(demande.getId())
+                .stream()
+                .map(statut -> {
+                Map<String, String> item = new HashMap<>();
+                String dateValue = statut.getDate_statut() == null
+                    ? ""
+                    : statut.getDate_statut().format(dateFormatter);
+                item.put("label", statut.getType_statut_demande().getLabel());
+                item.put("date", dateValue);
+                return item;
+                })
+                .collect(Collectors.toList());
+            statutHistory.put(demande.getId(), historyItems);
         }
 
         model.addAttribute("demandes", demandes);
         model.addAttribute("statutLabels", statutLabels);
+        model.addAttribute("statutHistory", statutHistory);
         return "list";
     }
 
@@ -151,10 +169,22 @@ public class FrontController {
     public String uploadPieces(
             @PathVariable Long idDemande,
             HttpServletRequest request,
+            @RequestParam(value = "singleDossierId", required = false) Long singleDossierId,
             RedirectAttributes redirectAttributes) {
         int uploaded = 0;
         int skipped = 0;
         try {
+            if (singleDossierId != null) {
+                Part part = request.getPart("fichier_" + singleDossierId);
+                if (part == null || part.getSize() == 0) {
+                    redirectAttributes.addFlashAttribute("errorMessage", "Aucun fichier selectionne.");
+                    return "redirect:/demande/" + idDemande + "/scan";
+                }
+                demandeVisaService.uploadPiece(idDemande, singleDossierId, part);
+                redirectAttributes.addFlashAttribute("successMessage", "Fichier charge avec succes.");
+                return "redirect:/demande/" + idDemande + "/scan";
+            }
+
             for (Part part : request.getParts()) {
                 String name = part.getName();
                 if (!name.startsWith("fichier_")) {
