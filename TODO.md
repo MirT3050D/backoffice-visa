@@ -363,5 +363,45 @@ Le statut de la demande passe alors de `Creer` à **`Scanne`**.
 *   Gérer l'affichage des erreurs (ex: `DemandeVerrouilleeException`) côté front.
 
 
+# Sprint 4 - Partie 1 : Frontoffice (Next.js) (Mir)
 
+- [ ] Creer une nouvelle app Next.js (frontoffice) dans un dossier dedie
+- [ ] Configurer l'URL du backoffice (env: `NEXT_PUBLIC_BACKOFFICE_URL`)
+- [ ] Creer la page d'accueil avec:
+  - [ ] Select: type de recherche (reference demande / reference passeport)
+  - [ ] Input: valeur de recherche
+  - [ ] Bouton: lancer la recherche
+- [ ] Creer un service API front (fetch) qui appelle les endpoints backoffice
+- [ ] Afficher les demandes du demandeur avec l'historique des statuts
+- [ ] Cas reference demande:
+  - [ ] Mettre la demande referencee en premier
+  - [ ] Lister les autres demandes ensuite
+- [ ] Cas reference passeport:
+  - [ ] Ordonner les demandes par date desc
+- [ ] Ajouter les etats UI: chargement, aucun resultat, erreur
+- [ ] Ajouter une maquette simple responsive (desktop + mobile)
 
+## Sprint 4 - Partie 2 : QR + Mobile (Frontoffice) (Amboara)
+
+- [ ] Definir une URL frontoffice publique via ngrok (ex: `https://xxxx.ngrok-free.app`)
+  - [ ] Lancer `ngrok http 3000` pour exposer le frontoffice
+  - [ ] Copier l'URL https generee et la stocker dans une variable de config du backoffice
+- [ ] Backoffice : generer les QR cote serveur (ZXing) avec un endpoint `/qr/{id}`
+  - [ ] Ajouter la dependance ZXing au projet
+  - [ ] Creer un controller qui retourne une image PNG du QR
+  - [ ] Utiliser l'URL frontoffice + `type=demande` + `ref=<id>` comme contenu du QR
+- [ ] Backoffice : afficher l'image QR via l'endpoint serveur dans la liste des demandes
+  - [ ] Ajouter une colonne QR dans `list-demande-visa.jsp`
+  - [ ] Charger l'image depuis `/qr/{id}`
+- [ ] QR payload : `https://xxxx.ngrok-free.app/demandes?type=demande&ref=<id>`
+  - [ ] Verifier que l'URL pointe bien vers le frontoffice
+  - [ ] Tester le scan avec un telephone sur le meme reseau
+- [ ] Frontoffice : page `/demandes` lit `type` + `ref` dans l'URL
+  - [ ] Parser les query params et declencher l'appel API automatiquement
+  - [ ] Afficher le resultat sans passer par le formulaire
+- [ ] Frontoffice : afficher la liste des demandes du demandeur (meme logique que Sprint 4 partie 1)
+  - [ ] Trier les demandes pour que la reference scannee soit en premier
+  - [ ] Afficher l'historique des statuts par demande
+- [ ] Frontoffice : layout mobile-first (cartes empilees, texte lisible, boutons larges)
+  - [ ] Utiliser une grille 1 colonne sur mobile
+  - [ ] Limiter la largeur et augmenter la taille des zones tappables
