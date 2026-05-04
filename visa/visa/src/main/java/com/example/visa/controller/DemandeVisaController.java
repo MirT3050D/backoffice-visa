@@ -1,6 +1,8 @@
 package com.example.visa.controller;
 
 import org.springframework.stereotype.Controller;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -31,14 +33,18 @@ import com.example.visa.repository.StatutDemandeRepository;
 import com.example.visa.service.DemandeVisaService;
 import com.example.visa.repository.DemandeVisaRepository;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/demande-visa")
 @SessionAttributes({ "passeportData", "transfertData" })
 public class DemandeVisaController {
+    private static final Logger logger = LoggerFactory.getLogger(DemandeVisaController.class);
     private final DemandeVisaService demandeVisaService;
     private final StatutDemandeRepository statutDemandeRepository;
     private final DemandeVisaRepository demandeVisaRepository;
@@ -422,18 +428,47 @@ public class DemandeVisaController {
         return "transfert-result";
     }
 
-    @GetMapping("/{reference}/")
+    @GetMapping("/reference/{reference}")
     @ResponseBody
-    public ResponseEntity<List<DemandeVisa>> DemandeVisaRepository(
+    public ResponseEntity<List<DemandeVisa>> getDemandesByReference(
             @PathVariable String reference) {
         try {
-            List<DemandeVisa> retour = this.demandeVisaRepository
-                    .findByDemandeId(reference);
-            if(retour.isEmpty()) {
-                retour = this.demandeVisaRepository.findByPasseportId(reference);
+            if (reference == null || reference.trim().isEmpty()) {
+                return ResponseEntity.badRequest().build();
             }
+            List<DemandeVisa> retour = this.demandeVisaRepository.findByReferenceLike(reference.trim());
             return ResponseEntity.ok(retour);
         } catch (Exception e) {
+            logger.error("Erreur lors de la recuperation des demandes pour la reference: {}", reference, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/reference/exact/{reference}")
+    @ResponseBody
+    public ResponseEntity<List<DemandeVisa>> getDemandesByReferenceExact(
+            @PathVariable String reference) {
+        try {
+            if (reference == null || reference.trim().isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            String trimmed = reference.trim();
+            Set<DemandeVisa> results = new LinkedHashSet<>();
+
+            try {
+                Long refId = Long.parseLong(trimmed);
+                results.addAll(this.demandeVisaRepository.findByDemandeId(refId));
+                results.addAll(this.demandeVisaRepository.findByPasseportId(refId));
+            } catch (NumberFormatException e) {
+                logger.debug("Reference non numerique pour recherche exacte: {}", trimmed);
+            }
+
+            results.addAll(this.demandeVisaRepository.findByPasseportNumero(trimmed));
+
+            return ResponseEntity.ok(new ArrayList<>(results));
+        } catch (Exception e) {
+            logger.error("Erreur lors de la recuperation des demandes pour la reference exacte: {}", reference, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

@@ -370,7 +370,7 @@ Le statut de la demande passe alors de `Creer` à **`Scanne`**.
 - [ ] Creer la page d'accueil avec:
   - [ ] Select: type de recherche (reference demande / reference passeport)
   - [ ] Input: valeur de recherche
-  - [ ] Bouton: lancer la recherchekv
+  - [ ] Bouton: lancer la recherche
 - [ ] Creer un service API front (fetch) qui appelle les endpoints backoffice
 - [ ] Afficher les demandes du demandeur avec l'historique des statuts
 - [ ] Cas reference demande:
