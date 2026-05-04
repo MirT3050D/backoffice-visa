@@ -4,11 +4,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.boot.jackson.autoconfigure.JacksonProperties.Json;
 import org.springframework.data.domain.PageRequest;
 
 import com.example.visa.dto.CreerDemandeVisaForm;
@@ -17,30 +22,34 @@ import com.example.visa.dto.FinaliserTransfertSansDonneesForm;
 import com.example.visa.dto.PasseportForm;
 import com.example.visa.dto.TransfertResult;
 import com.example.visa.service.DemandeVisaService;
+
 import com.example.visa.model.CarteResident;
 import com.example.visa.model.Passeport;
 import com.example.visa.model.DemandeVisa;
 import com.example.visa.model.StatutDemande;
 import com.example.visa.repository.StatutDemandeRepository;
 import com.example.visa.service.DemandeVisaService;
+import com.example.visa.repository.DemandeVisaRepository;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 @Controller
 @RequestMapping("/demande-visa")
-@SessionAttributes({"passeportData", "transfertData"})
+@SessionAttributes({ "passeportData", "transfertData" })
 public class DemandeVisaController {
     private final DemandeVisaService demandeVisaService;
     private final StatutDemandeRepository statutDemandeRepository;
+    private final DemandeVisaRepository demandeVisaRepository;
 
     public DemandeVisaController(DemandeVisaService demandeVisaService,
-                                 StatutDemandeRepository statutDemandeRepository) {
+            StatutDemandeRepository statutDemandeRepository, DemandeVisaRepository demandeVisaRepository) {
         this.demandeVisaService = demandeVisaService;
         this.statutDemandeRepository = statutDemandeRepository;
-    }
+        this.demandeVisaRepository = demandeVisaRepository;
+            }
+    
 
     @GetMapping("/visa-type")
     public String typeVisa(@RequestParam(value = "type_demande_id", required = false) Long typeDemandeId, Model model) {
@@ -54,7 +63,7 @@ public class DemandeVisaController {
     }
 
     @PostMapping("/visa-type")
-    public String creerPasseport(@ModelAttribute("passeportForm") PasseportForm passeportForm, 
+    public String creerPasseport(@ModelAttribute("passeportForm") PasseportForm passeportForm,
             Model model,
             RedirectAttributes redirectAttributes) {
         try {
@@ -69,7 +78,7 @@ public class DemandeVisaController {
     }
 
     @GetMapping("/select-visa")
-    public String selectVisa(@RequestParam(value = "type_demande_id", required = false) Long typeDemandeId, 
+    public String selectVisa(@RequestParam(value = "type_demande_id", required = false) Long typeDemandeId,
             Model model) {
         model.addAttribute("typesVisa", demandeVisaService.getAllTypesVisa());
         model.addAttribute("typeDemandeId", typeDemandeId);
@@ -84,7 +93,7 @@ public class DemandeVisaController {
             @RequestParam(value = "passeportPrenom", required = false) String passeportPrenom,
             Model model,
             RedirectAttributes redirectAttributes) {
-        
+
         if (selectedVisa == null || selectedVisa.isEmpty()) {
             model.addAttribute("error", "Veuillez selectionner un type de visa");
             model.addAttribute("typesVisa", demandeVisaService.getAllTypesVisa());
@@ -99,7 +108,7 @@ public class DemandeVisaController {
             model.addAttribute("champsCommuns", demandeVisaService.getChampsCommuns());
             model.addAttribute("champsSpecifiques", demandeVisaService.getChampsSpecifiques(typeVisaId));
             model.addAttribute("villesParPays", demandeVisaService.getVillesParPays());
-            
+
             return "saisie-visa-dossiers";
         } catch (Exception e) {
             model.addAttribute("error", "Erreur lors de la preparation de la saisie: " + e.getMessage());
@@ -110,20 +119,22 @@ public class DemandeVisaController {
     }
 
     @GetMapping("/visa-type-old")
-    public String typeVisaOld(@RequestParam(value = "type_demande_id", required = false) Long typeDemandeId, Model model) {
+    public String typeVisaOld(@RequestParam(value = "type_demande_id", required = false) Long typeDemandeId,
+            Model model) {
         model.addAttribute("typesVisa", demandeVisaService.getAllTypesVisa());
         model.addAttribute("typeDemandeId", typeDemandeId);
         return "visa-type";
     }
 
     @GetMapping("/visa-form")
-    public String visaForm(@RequestParam("typeVisaId") Long typeVisaId, @RequestParam(value = "type_demande_id", required = false) Long typeDemandeId, Model model) {
+    public String visaForm(@RequestParam("typeVisaId") Long typeVisaId,
+            @RequestParam(value = "type_demande_id", required = false) Long typeDemandeId, Model model) {
         model.addAttribute("typeVisaId", typeVisaId);
         model.addAttribute("typeDemandeId", typeDemandeId);
         model.addAttribute("champsCommuns", demandeVisaService.getChampsCommuns());
         model.addAttribute("champsSpecifiques", demandeVisaService.getChampsSpecifiques(typeVisaId));
         model.addAttribute("nationalites", demandeVisaService.getAllNationalites());
-        model.addAttribute("situationsFamiliales", demandeVisaService.getAllSituationsFamiliales());    
+        model.addAttribute("situationsFamiliales", demandeVisaService.getAllSituationsFamiliales());
         return "visa-form-a-remplir";
     }
 
@@ -154,7 +165,8 @@ public class DemandeVisaController {
             return "redirect:/demande-visa/nouveau-passeport?type_demande_id=" + form.getTypeDemandeId()
                     + "&type_visa_id=" + form.getTypeVisaId();
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Erreur lors de la preparation du transfert: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error",
+                    "Erreur lors de la preparation du transfert: " + e.getMessage());
             return "redirect:/demande-visa/select-visa?type_demande_id=" + form.getTypeDemandeId();
         }
     }
@@ -179,14 +191,14 @@ public class DemandeVisaController {
         System.out.println("Type Visa ID: " + form.getTypeVisaId());
         System.out.println("Type Demande Visa ID: " + form.getTypeDemandeId());
         System.out.println("Nom: " + form.getNom() + " | Prenom: " + form.getPrenom());
-        
+
         try {
             System.out.println("-> Appel de demandeVisaService.creerDemandeVisa()");
             int statutInitial = 1; // 1 = Créer
             if (form.getTypeDemandeId() != 1L) {
                 statutInitial = 5; // Les demandes différentes de "Nouveau Titre" commencent avec "Approuvé"
             }
-            demandeVisaService.creerDemandeVisa(form, form.getTypeDemandeId() ,statutInitial);
+            demandeVisaService.creerDemandeVisa(form, form.getTypeDemandeId(), statutInitial);
             System.out.println("-> Succes : Demande de visa creee en base de donnees.");
             redirectAttributes.addFlashAttribute("successMessage", "Les informations ont bien ete stockees.");
             return "redirect:/";
@@ -209,7 +221,7 @@ public class DemandeVisaController {
         if (form.getDateDemande() == null) {
             form.setDateDemande(java.time.LocalDate.now());
         }
-        
+
         if (passeportForm != null) {
             form.setNom(passeportForm.getNom());
             form.setPrenom(passeportForm.getPrenom());
@@ -324,7 +336,8 @@ public class DemandeVisaController {
     }
 
     @GetMapping("/list")
-    public String listDemandes(Model model, @RequestParam(value = "type_demande_id", required = false) Long typeDemandeId) {
+    public String listDemandes(Model model,
+            @RequestParam(value = "type_demande_id", required = false) Long typeDemandeId) {
         List<DemandeVisa> demandes = demandeVisaService.getAllDemandes();
         Map<Long, String> statutLabels = new HashMap<>();
         for (DemandeVisa demande : demandes) {
@@ -341,7 +354,7 @@ public class DemandeVisaController {
         model.addAttribute("demandes", demandes);
         model.addAttribute("statutLabels", statutLabels);
         model.addAttribute("typeDemandeId", typeDemandeId);
-        
+
         return "list-demande-visa";
     }
 
@@ -408,4 +421,21 @@ public class DemandeVisaController {
         }
         return "transfert-result";
     }
+
+    @GetMapping("/{reference}/")
+    @ResponseBody
+    public ResponseEntity<List<DemandeVisa>> DemandeVisaRepository(
+            @PathVariable String reference) {
+        try {
+            List<DemandeVisa> retour = this.demandeVisaRepository
+                    .findByDemandeId(reference);
+            if(retour.isEmpty()) {
+                retour = this.demandeVisaRepository.findByPasseportId(reference);
+            }
+            return ResponseEntity.ok(retour);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }
