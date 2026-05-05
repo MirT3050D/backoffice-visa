@@ -211,9 +211,9 @@
                                     <c:forEach var="demande" items="${demandes}">
                                         <tr class="clickable-row" data-href="${pageContext.request.contextPath}/list/${demande.id}">
                                             <td>${demande.id}</td>
-                                            <td>${demande.date_demande}</td>
-                                            <td>${demande.type_demande_visa.label}</td>
-                                            <td>${demande.type_visa.label}</td>
+                                            <td>${demande.dateDemande}</td>
+                                            <td>${demande.typeDemandeVisa.label}</td>
+                                            <td>${demande.typeVisa.label}</td>
                                             <td>
                                                 <div class="status-cell">
                                                     <span class="status-current">${statutLabels[demande.id]}</span>

@@ -217,35 +217,35 @@ public class DemandeVisaService {
 		EtatCivil etatCivil = new EtatCivil();
 		etatCivil.setNom(form.getNom());
 		etatCivil.setPrenom(form.getPrenom());
-		etatCivil.setNom_jeune_fille(form.getNomJeuneFille());
+		etatCivil.setNomJeuneFille(form.getNomJeuneFille());
 		etatCivil.setEmail(form.getEmail());
-		etatCivil.setNum_tel(form.getNumeroTelephone());
-		etatCivil.setDate_naissance(form.getDateNaissance());
-		etatCivil.setLieu_naissance(form.getLieuNaissance());
-		etatCivil.setAdresse_mada(form.getAdresseMada());
+		etatCivil.setNumTel(form.getNumeroTelephone());
+		etatCivil.setDateNaissance(form.getDateNaissance());
+		etatCivil.setLieuNaissance(form.getLieuNaissance());
+		etatCivil.setAdresseMada(form.getAdresseMada());
 		etatCivil.setNationalite(nationalite);
-		etatCivil.setSituation_familiale(situationFamiliale);
+		etatCivil.setSituationFamiliale(situationFamiliale);
 		EtatCivil savedEtatCivil = etatCivilRepository.save(etatCivil);
 
 		Passeport passeport = new Passeport();
-		passeport.setNum_passeport(form.getNumeroPasseport());
-		passeport.setDate_delivrance(form.getDateDelivrancePasseport());
-		passeport.setDate_expiration(form.getDateExpirationPasseport());
+		passeport.setNumPasseport(form.getNumeroPasseport());
+		passeport.setDateDelivrance(form.getDateDelivrancePasseport());
+		passeport.setDateExpiration(form.getDateExpirationPasseport());
 		passeport.setEtatCivil(savedEtatCivil);
 		Passeport savedPasseport = passeportRepository.save(passeport);
 
 		VisaTransformable visaTransformable = new VisaTransformable();
-		visaTransformable.setDate_entre(null);
-		visaTransformable.setNumero_passport(form.getVisaTranNumPasseport());
-		visaTransformable.setDate_delivrance(form.getVisaTranDateDelivrance());
-		visaTransformable.setDate_expiration(form.getVisaTranDateExpiration());
+		visaTransformable.setDateEntre(null);
+		visaTransformable.setNumeroPassport(form.getVisaTranNumPasseport());
+		visaTransformable.setDateDelivrance(form.getVisaTranDateDelivrance());
+		visaTransformable.setDateExpiration(form.getVisaTranDateExpiration());
 		visaTransformable.setEtatCivil(savedEtatCivil);
 		visaTransformableRepository.save(visaTransformable);
 
 		DemandeVisa demandeVisa = new DemandeVisa();
-		demandeVisa.setDate_demande(form.getDateDemande());
-		demandeVisa.setType_demande_visa(typeDemandeVisa);
-		demandeVisa.setType_visa(typeVisa);
+		demandeVisa.setDateDemande(form.getDateDemande());
+		demandeVisa.setTypeDemandeVisa(typeDemandeVisa);
+		demandeVisa.setTypeVisa(typeVisa);
 		demandeVisa.setPasseport(savedPasseport);
 
 		DemandeVisa savedDemandeVisa = demandeVisaRepository.save(demandeVisa);
@@ -288,9 +288,9 @@ public class DemandeVisaService {
 			.orElseThrow(() -> new IllegalStateException("Statut rang " + rang + " introuvable"));
 		
 		StatutDemande statutDemande = new StatutDemande();
-		statutDemande.setDemande_visa(demande);
-		statutDemande.setType_statut_demande(statut);
-		statutDemande.setDate_statut(java.time.LocalDateTime.now().toLocalDate());
+		statutDemande.setDemandeVisa(demande);
+		statutDemande.setTypeStatutDemande(statut);
+		statutDemande.setDateStatut(java.time.LocalDateTime.now().toLocalDate());
 		statutDemandeRepository.save(statutDemande);
 	}
 
@@ -308,7 +308,7 @@ public class DemandeVisaService {
         ancienVisa.setDateExpiration(form.getAncienDateExpiration());
         ancienVisa.setDemandeVisa(demandeNouveauTitre);
         ancienVisa.setEtatCivil(demandeNouveauTitre.getPasseport().getEtatCivil());
-        ancienVisa.setTypeVisa(demandeNouveauTitre.getType_visa());
+		ancienVisa.setTypeVisa(demandeNouveauTitre.getTypeVisa());
         
 		// Attribution de la ville depuis le formulaire si fournie, sinon première ville disponible
 		Ville ville = null;
@@ -352,10 +352,10 @@ public class DemandeVisaService {
                 .orElseThrow(() -> new IllegalArgumentException("Type demande Duplicata (id=2) introuvable"));
 
         DemandeVisa demandeDuplicata = new DemandeVisa();
-        demandeDuplicata.setDate_demande(java.time.LocalDate.now());
+		demandeDuplicata.setDateDemande(java.time.LocalDate.now());
         demandeDuplicata.setPasseport(demandeNouveauTitre.getPasseport());
-        demandeDuplicata.setType_visa(demandeNouveauTitre.getType_visa());
-        demandeDuplicata.setType_demande_visa(typeDemandeDuplicata);
+		demandeDuplicata.setTypeVisa(demandeNouveauTitre.getTypeVisa());
+		demandeDuplicata.setTypeDemandeVisa(typeDemandeDuplicata);
         
         DemandeVisa savedDemandeDuplicata = demandeVisaRepository.save(demandeDuplicata);
 
@@ -386,10 +386,10 @@ public class DemandeVisaService {
 				.orElseThrow(() -> new IllegalArgumentException("Type demande Duplicata (id=2) introuvable"));
 
 		DemandeVisa demandeDuplicata = new DemandeVisa();
-		demandeDuplicata.setDate_demande(java.time.LocalDate.now());
+		demandeDuplicata.setDateDemande(java.time.LocalDate.now());
 		demandeDuplicata.setPasseport(visa.getDemandeVisa().getPasseport());
-		demandeDuplicata.setType_visa(visa.getTypeVisa());
-		demandeDuplicata.setType_demande_visa(typeDemandeDuplicata);
+		demandeDuplicata.setTypeVisa(visa.getTypeVisa());
+		demandeDuplicata.setTypeDemandeVisa(typeDemandeDuplicata);
 
 		DemandeVisa savedDemandeDuplicata = demandeVisaRepository.save(demandeDuplicata);
 		creerStatutInitial(savedDemandeDuplicata, 5);
@@ -415,9 +415,9 @@ public class DemandeVisaService {
 		Visa visa = visaRepository.findById(visaId)
 				.orElseThrow(() -> new IllegalArgumentException("Visa introuvable"));
 		Passeport nouveauPasseport = new Passeport();
-		nouveauPasseport.setNum_passeport(numeroPasseport);
-		nouveauPasseport.setDate_delivrance(dateDelivrance);
-		nouveauPasseport.setDate_expiration(dateExpiration);
+		nouveauPasseport.setNumPasseport(numeroPasseport);
+		nouveauPasseport.setDateDelivrance(dateDelivrance);
+		nouveauPasseport.setDateExpiration(dateExpiration);
 		nouveauPasseport.setEtatCivil(visa.getEtatCivil());
 		Passeport savedPasseport = passeportRepository.save(nouveauPasseport);
 
@@ -430,10 +430,10 @@ public class DemandeVisaService {
 		TypeDemandeVisa typeDemandeTransfert = typeDemandeVisaRepository.findById(3L)
 				.orElseThrow(() -> new IllegalArgumentException("Type demande Transfert (id=3) introuvable"));
 		DemandeVisa demandeTransfert = new DemandeVisa();
-		demandeTransfert.setDate_demande(java.time.LocalDate.now());
+		demandeTransfert.setDateDemande(java.time.LocalDate.now());
 		demandeTransfert.setPasseport(savedPasseport);
-		demandeTransfert.setType_visa(visa.getTypeVisa());
-		demandeTransfert.setType_demande_visa(typeDemandeTransfert);
+		demandeTransfert.setTypeVisa(visa.getTypeVisa());
+		demandeTransfert.setTypeDemandeVisa(typeDemandeTransfert);
 		DemandeVisa savedDemandeTransfert = demandeVisaRepository.save(demandeTransfert);
 		creerStatutInitial(savedDemandeTransfert, 5);
 
@@ -453,7 +453,7 @@ public class DemandeVisaService {
 		ancienVisa.setDateExpiration(form.getAncienDateExpiration());
 		ancienVisa.setDemandeVisa(demandeNouveauTitre);
 		ancienVisa.setEtatCivil(demandeNouveauTitre.getPasseport().getEtatCivil());
-		ancienVisa.setTypeVisa(demandeNouveauTitre.getType_visa());
+		ancienVisa.setTypeVisa(demandeNouveauTitre.getTypeVisa());
 
 		Ville ville = null;
 		if (form.getAncienVilleId() != null) {
@@ -493,9 +493,9 @@ public class DemandeVisaService {
 
 		// 6. Inserer le nouveau passeport et le lier au meme etat civil
 		Passeport nouveauPasseport = new Passeport();
-		nouveauPasseport.setNum_passeport(form.getNouveauNumeroPasseport());
-		nouveauPasseport.setDate_delivrance(form.getNouveauDateDelivrance());
-		nouveauPasseport.setDate_expiration(form.getNouveauDateExpiration());
+		nouveauPasseport.setNumPasseport(form.getNouveauNumeroPasseport());
+		nouveauPasseport.setDateDelivrance(form.getNouveauDateDelivrance());
+		nouveauPasseport.setDateExpiration(form.getNouveauDateExpiration());
 		nouveauPasseport.setEtatCivil(demandeNouveauTitre.getPasseport().getEtatCivil());
 		Passeport savedNouveauPasseport = passeportRepository.save(nouveauPasseport);
 
@@ -511,10 +511,10 @@ public class DemandeVisaService {
 				.orElseThrow(() -> new IllegalArgumentException("Type demande Transfert (id=3) introuvable"));
 
 		DemandeVisa demandeTransfert = new DemandeVisa();
-		demandeTransfert.setDate_demande(java.time.LocalDate.now());
+		demandeTransfert.setDateDemande(java.time.LocalDate.now());
 		demandeTransfert.setPasseport(savedNouveauPasseport);
-		demandeTransfert.setType_visa(demandeNouveauTitre.getType_visa());
-		demandeTransfert.setType_demande_visa(typeDemandeTransfert);
+		demandeTransfert.setTypeVisa(demandeNouveauTitre.getTypeVisa());
+		demandeTransfert.setTypeDemandeVisa(typeDemandeTransfert);
 
 		DemandeVisa savedDemandeTransfert = demandeVisaRepository.save(demandeTransfert);
 
@@ -535,12 +535,12 @@ public class DemandeVisaService {
 		EtatCivil etatCivil = passeport.getEtatCivil();
 		etatCivil.setNom(form.getNom());
 		etatCivil.setPrenom(form.getPrenom());
-		etatCivil.setNom_jeune_fille(form.getNomJeuneFille());
+		etatCivil.setNomJeuneFille(form.getNomJeuneFille());
 		etatCivil.setEmail(form.getEmail());
-		etatCivil.setNum_tel(form.getNumeroTelephone());
-		etatCivil.setDate_naissance(form.getDateNaissance());
-		etatCivil.setLieu_naissance(form.getLieuNaissance());
-		etatCivil.setAdresse_mada(form.getAdresseMada());
+		etatCivil.setNumTel(form.getNumeroTelephone());
+		etatCivil.setDateNaissance(form.getDateNaissance());
+		etatCivil.setLieuNaissance(form.getLieuNaissance());
+		etatCivil.setAdresseMada(form.getAdresseMada());
 		if (form.getNationaliteId() != null) {
 			Nationalite nationalite = nationaliteRepository.findById(form.getNationaliteId())
 					.orElseThrow(() -> new IllegalArgumentException("Nationalite introuvable"));
@@ -550,23 +550,23 @@ public class DemandeVisaService {
 			SitutationFamiliale situationFamiliale = situtationFamilialeRepository
 					.findById(form.getSituationFamilialeId())
 					.orElseThrow(() -> new IllegalArgumentException("Situation familiale introuvable"));
-			etatCivil.setSituation_familiale(situationFamiliale);
+			etatCivil.setSituationFamiliale(situationFamiliale);
 		}
 
-		passeport.setNum_passeport(form.getNumeroPasseport());
-		passeport.setDate_delivrance(form.getDateDelivrancePasseport());
-		passeport.setDate_expiration(form.getDateExpirationPasseport());
+		passeport.setNumPasseport(form.getNumeroPasseport());
+		passeport.setDateDelivrance(form.getDateDelivrancePasseport());
+		passeport.setDateExpiration(form.getDateExpirationPasseport());
 
 		if (form.getTypeVisaId() != null) {
 			TypeVisa typeVisa = typeVisaRepository.findById(form.getTypeVisaId())
 					.orElseThrow(() -> new IllegalArgumentException("Type de visa introuvable"));
-			demande.setType_visa(typeVisa);
+			demande.setTypeVisa(typeVisa);
 		}
 
 		if (form.getTypeDemandeId() != null) {
 			TypeDemandeVisa typeDemande = typeDemandeVisaRepository.findById(form.getTypeDemandeId())
 					.orElseThrow(() -> new IllegalArgumentException("Type de demande introuvable"));
-			demande.setType_demande_visa(typeDemande);
+			demande.setTypeDemandeVisa(typeDemande);
 		}
 
 		VisaTransformable visaTransformable = visaTransformableRepository
@@ -576,9 +576,9 @@ public class DemandeVisaService {
 					v.setEtatCivil(etatCivil);
 					return v;
 				});
-		visaTransformable.setNumero_passport(form.getVisaTranNumPasseport());
-		visaTransformable.setDate_delivrance(form.getVisaTranDateDelivrance());
-		visaTransformable.setDate_expiration(form.getVisaTranDateExpiration());
+		visaTransformable.setNumeroPassport(form.getVisaTranNumPasseport());
+		visaTransformable.setDateDelivrance(form.getVisaTranDateDelivrance());
+		visaTransformable.setDateExpiration(form.getVisaTranDateExpiration());
 
 		etatCivilRepository.save(etatCivil);
 		passeportRepository.save(passeport);
@@ -606,7 +606,7 @@ public class DemandeVisaService {
 			dossierRepository.save(dossierCommun);
 		}
 
-		TypeVisa typeVisa = demande.getType_visa();
+		TypeVisa typeVisa = demande.getTypeVisa();
 		List<ChampFournirSpecifique> champsSpecifiques = champFournirSpecifiqueRepository.findByTypeVisaId(typeVisa.getId());
 		for (ChampFournirSpecifique champSpecifique : champsSpecifiques) {
 			Dossier dossierSpecifique = new Dossier();
@@ -679,9 +679,9 @@ public class DemandeVisaService {
 		TypeStatutDemande statut = typeStatutDemandeRepository.findByRang(2)
 				.orElseThrow(() -> new IllegalStateException("Statut rang 2 introuvable"));
 		StatutDemande statutDemande = new StatutDemande();
-		statutDemande.setDemande_visa(savedDemande);
-		statutDemande.setType_statut_demande(statut);
-		statutDemande.setDate_statut(java.time.LocalDate.now());
+		statutDemande.setDemandeVisa(savedDemande);
+		statutDemande.setTypeStatutDemande(statut);
+		statutDemande.setDateStatut(java.time.LocalDate.now());
 		statutDemandeRepository.save(statutDemande);
 		return savedDemande;
 	}

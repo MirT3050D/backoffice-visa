@@ -9,6 +9,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface HistoriquePasseportVisaRepository extends JpaRepository<HistoriquePasseportVisa, Long> {
-	@Query("select h from HistoriquePasseportVisa h where h.passeport.num_passeport = :numPasseport order by h.dateHistorique desc")
+	@Query("select h from HistoriquePasseportVisa h where h.passeport.numPasseport = :numPasseport order by h.dateHistorique desc")
 	List<HistoriquePasseportVisa> findLatestByPasseportNumero(@Param("numPasseport") String numPasseport, Pageable pageable);
 }

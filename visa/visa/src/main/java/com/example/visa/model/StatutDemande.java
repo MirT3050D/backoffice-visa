@@ -10,42 +10,42 @@ public class StatutDemande {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = false)
-    private LocalDate date_statut;
+    @Column(nullable = false, unique = false, name = "date_statut")
+    private LocalDate dateStatut;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_demande_visa", nullable = false)
-    private DemandeVisa demande_visa;
+    private DemandeVisa demandeVisa;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_type_statut_demande", nullable = false)
-    private TypeStatutDemande type_statut_demande;
+    private TypeStatutDemande typeStatutDemande;
     
     public Long getId() {
         return id;
     }
 
-    public LocalDate getDate_statut() {
-        return date_statut;
+    public LocalDate getDateStatut() {
+        return dateStatut;
     }
 
-    public DemandeVisa getDemande_visa() {
-        return demande_visa;
+    public DemandeVisa getDemandeVisa() {
+        return demandeVisa;
     }
 
-    public TypeStatutDemande getType_statut_demande() {
-        return type_statut_demande;
+    public TypeStatutDemande getTypeStatutDemande() {
+        return typeStatutDemande;
     }
 
-    public void setDate_statut(LocalDate date_statut) {
-        this.date_statut = date_statut;
+    public void setDateStatut(LocalDate dateStatut) {
+        this.dateStatut = dateStatut;
     }
 
-    public void setDemande_visa(DemandeVisa demande_visa) {
-        this.demande_visa = demande_visa;
+    public void setDemandeVisa(DemandeVisa demandeVisa) {
+        this.demandeVisa = demandeVisa;
     }
 
-    public void setType_statut_demande(TypeStatutDemande type_statut_demande) {
-        this.type_statut_demande = type_statut_demande;
+    public void setTypeStatutDemande(TypeStatutDemande typeStatutDemande) {
+        this.typeStatutDemande = typeStatutDemande;
     }
 }

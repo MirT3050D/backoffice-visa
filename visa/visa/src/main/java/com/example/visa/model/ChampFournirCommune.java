@@ -11,8 +11,8 @@ public class ChampFournirCommune {
     @Column(nullable = false, unique = true)
     private String label;
 
-    @Column(nullable = false, unique = false)
-    private String type_donnee;
+    @Column(nullable = false, unique = false, name = "type_donnee")
+    private String typeDonnee;
 
     public Long getId() {
         return id;
@@ -27,10 +27,10 @@ public class ChampFournirCommune {
     }
 
     public String getTypeDonnee() {
-        return type_donnee;
+        return typeDonnee;
     }
 
-    public void setTypeDonnee(String type_donnee) {
-        this.type_donnee = type_donnee;
+    public void setTypeDonnee(String typeDonnee) {
+        this.typeDonnee = typeDonnee;
     }
 }

@@ -10,14 +10,14 @@ public class Passeport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String num_passeport;
+    @Column(nullable = false, unique = true, name = "num_passeport")
+    private String numPasseport;
 
-    @Column(nullable = false, unique = false)
-    private LocalDate date_expiration;
+    @Column(nullable = false, unique = false, name = "date_expiration")
+    private LocalDate dateExpiration;
 
-    @Column(nullable = false, unique = false)
-    private LocalDate date_delivrance;
+    @Column(nullable = false, unique = false, name = "date_delivrance")
+    private LocalDate dateDelivrance;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_etat_civil", nullable = false)
@@ -27,32 +27,32 @@ public class Passeport {
         return id;
     }
 
-    public String getNum_passeport() {
-        return num_passeport;
+    public String getNumPasseport() {
+        return numPasseport;
     }
 
-    public LocalDate getDate_expiration() {
-        return date_expiration;
+    public LocalDate getDateExpiration() {
+        return dateExpiration;
     }
 
-    public LocalDate getDate_delivrance() {
-        return date_delivrance;
+    public LocalDate getDateDelivrance() {
+        return dateDelivrance;
     }
 
     public EtatCivil getEtatCivil() {
         return etatCivil;
     }
 
-    public void setNum_passeport(String num_passeport) {
-        this.num_passeport = num_passeport;
+    public void setNumPasseport(String numPasseport) {
+        this.numPasseport = numPasseport;
     }
 
-    public void setDate_expiration(LocalDate date_expiration) {
-        this.date_expiration = date_expiration;
+    public void setDateExpiration(LocalDate dateExpiration) {
+        this.dateExpiration = dateExpiration;
     }
 
-    public void setDate_delivrance(LocalDate date_delivrance) {
-        this.date_delivrance = date_delivrance;
+    public void setDateDelivrance(LocalDate dateDelivrance) {
+        this.dateDelivrance = dateDelivrance;
     }
 
     public void setEtatCivil(EtatCivil etatCivil) {

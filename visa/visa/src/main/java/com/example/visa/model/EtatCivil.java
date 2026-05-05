@@ -16,23 +16,23 @@ public class EtatCivil {
     @Column(nullable = true, length = 100)
     private String prenom;
 
-    @Column(nullable = true, length = 100)
-    private String nom_jeune_fille;
+    @Column(nullable = true, length = 100, name = "nom_jeune_fille")
+    private String nomJeuneFille;
 
     @Column(unique = true, nullable = true, length = 150)
     private String email;
 
-    @Column(unique = true, nullable = false, length = 50)
-    private String num_tel;
+    @Column(unique = true, nullable = false, length = 50, name = "num_tel")
+    private String numTel;
 
-    @Column(unique = false, nullable = false, length = 150)
-    private LocalDate date_naissance;   
+    @Column(unique = false, nullable = false, length = 150, name = "date_naissance")
+    private LocalDate dateNaissance;
 
-    @Column(unique = false, nullable = false, length = 150)
-    private String lieu_naissance;
+    @Column(unique = false, nullable = false, length = 150, name = "lieu_naissance")
+    private String lieuNaissance;
 
-    @Column(unique = false, nullable = false, length = 150)
-    private String adresse_mada;
+    @Column(unique = false, nullable = false, length = 150, name = "adresse_mada")
+    private String adresseMada;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_nationalite", nullable = false)
@@ -40,7 +40,7 @@ public class EtatCivil {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_situation_familiale", nullable = false)
-    private SitutationFamiliale situation_familiale;
+    private SitutationFamiliale situationFamiliale;
 
     public Long getId() {
         return id;
@@ -54,36 +54,36 @@ public class EtatCivil {
         return prenom;
     }
 
-    public String getNom_jeune_fille() {
-        return nom_jeune_fille;
+    public String getNomJeuneFille() {
+        return nomJeuneFille;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public String getNum_tel() {
-        return num_tel;
+    public String getNumTel() {
+        return numTel;
     }
 
-    public LocalDate getDate_naissance() {
-        return date_naissance;
+    public LocalDate getDateNaissance() {
+        return dateNaissance;
     }
 
-    public String getLieu_naissance() {
-        return lieu_naissance;
+    public String getLieuNaissance() {
+        return lieuNaissance;
     }
 
-    public String getAdresse_mada() {
-        return adresse_mada;
+    public String getAdresseMada() {
+        return adresseMada;
     }
 
     public Nationalite getNationalite() {
         return nationalite;
     }
 
-    public SitutationFamiliale getSituation_familiale() {
-        return situation_familiale;
+    public SitutationFamiliale getSituationFamiliale() {
+        return situationFamiliale;
     }
 
     public void setNom(String nom) {
@@ -94,36 +94,36 @@ public class EtatCivil {
         this.prenom = prenom;
     }
 
-    public void setNom_jeune_fille(String nom_jeune_fille) {
-        this.nom_jeune_fille = nom_jeune_fille;
+    public void setNomJeuneFille(String nomJeuneFille) {
+        this.nomJeuneFille = nomJeuneFille;
     }
 
     public void setEmail(String email) {
         this.email = email;
     }
 
-    public void setNum_tel(String num_tel) {
-        this.num_tel = num_tel;
+    public void setNumTel(String numTel) {
+        this.numTel = numTel;
     }
 
-    public void setDate_naissance(LocalDate date_naissance) {
-        this.date_naissance = date_naissance;
+    public void setDateNaissance(LocalDate dateNaissance) {
+        this.dateNaissance = dateNaissance;
     }
 
-    public void setLieu_naissance(String lieu_naissance) {
-        this.lieu_naissance = lieu_naissance;
+    public void setLieuNaissance(String lieuNaissance) {
+        this.lieuNaissance = lieuNaissance;
     }
 
-    public void setAdresse_mada(String adresse_mada) {
-        this.adresse_mada = adresse_mada;
+    public void setAdresseMada(String adresseMada) {
+        this.adresseMada = adresseMada;
     }
 
     public void setNationalite(Nationalite nationalite) {
         this.nationalite = nationalite;
     }
 
-    public void setSituation_familiale(SitutationFamiliale situation_familiale) {
-        this.situation_familiale = situation_familiale;
+    public void setSituationFamiliale(SitutationFamiliale situationFamiliale) {
+        this.situationFamiliale = situationFamiliale;
     }
 
 

@@ -49,9 +49,9 @@
                     <h2>Informations Demande</h2>
                     <div class="detail-grid">
                         <div class="detail-item"><span>ID</span><strong>${demande.id}</strong></div>
-                        <div class="detail-item"><span>Date de demande</span><strong>${demande.date_demande}</strong></div>
-                        <div class="detail-item"><span>Type de demande</span><strong>${demande.type_demande_visa.label}</strong></div>
-                        <div class="detail-item"><span>Type de visa</span><strong>${demande.type_visa.label}</strong></div>
+                        <div class="detail-item"><span>Date de demande</span><strong>${demande.dateDemande}</strong></div>
+                        <div class="detail-item"><span>Type de demande</span><strong>${demande.typeDemandeVisa.label}</strong></div>
+                        <div class="detail-item"><span>Type de visa</span><strong>${demande.typeVisa.label}</strong></div>
                     </div>
                 </section>
 
@@ -60,20 +60,20 @@
                     <div class="detail-grid">
                         <div class="detail-item"><span>Nom</span><strong>${demande.passeport.etatCivil.nom}</strong></div>
                         <div class="detail-item"><span>Prenom</span><strong>${demande.passeport.etatCivil.prenom}</strong></div>
-                        <div class="detail-item"><span>Date de naissance</span><strong>${demande.passeport.etatCivil.date_naissance}</strong></div>
+                        <div class="detail-item"><span>Date de naissance</span><strong>${demande.passeport.etatCivil.dateNaissance}</strong></div>
                         <div class="detail-item"><span>Email</span><strong>${demande.passeport.etatCivil.email}</strong></div>
-                        <div class="detail-item"><span>Telephone</span><strong>${demande.passeport.etatCivil.num_tel}</strong></div>
+                        <div class="detail-item"><span>Telephone</span><strong>${demande.passeport.etatCivil.numTel}</strong></div>
                         <div class="detail-item"><span>Nationalite</span><strong>${demande.passeport.etatCivil.nationalite.label}</strong></div>
-                        <div class="detail-item"><span>Situation familiale</span><strong>${demande.passeport.etatCivil.situation_familiale.label}</strong></div>
+                        <div class="detail-item"><span>Situation familiale</span><strong>${demande.passeport.etatCivil.situationFamiliale.label}</strong></div>
                     </div>
                 </section>
 
                 <section class="detail-card">
                     <h2>Passeport</h2>
                     <div class="detail-grid">
-                        <div class="detail-item"><span>Numero passeport</span><strong>${demande.passeport.num_passeport}</strong></div>
-                        <div class="detail-item"><span>Date delivrance</span><strong>${demande.passeport.date_delivrance}</strong></div>
-                        <div class="detail-item"><span>Date expiration</span><strong>${demande.passeport.date_expiration}</strong></div>
+                        <div class="detail-item"><span>Numero passeport</span><strong>${demande.passeport.numPasseport}</strong></div>
+                        <div class="detail-item"><span>Date delivrance</span><strong>${demande.passeport.dateDelivrance}</strong></div>
+                        <div class="detail-item"><span>Date expiration</span><strong>${demande.passeport.dateExpiration}</strong></div>
                     </div>
                 </section>
 

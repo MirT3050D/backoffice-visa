@@ -10,17 +10,17 @@ public class VisaTransformable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = true, unique = false)
-    private String date_entre;    
+    @Column(nullable = true, unique = false, name = "date_entre")
+    private String dateEntre;
 
-    @Column(nullable = false, unique = true)
-    private String numero_passport;
+    @Column(nullable = false, unique = true, name = "numero_passport")
+    private String numeroPassport;
 
-    @Column(nullable = false, unique = false)
-    private LocalDate date_expiration;
+    @Column(nullable = false, unique = false, name = "date_expiration")
+    private LocalDate dateExpiration;
 
-    @Column(nullable = false, unique = false)
-    private LocalDate date_delivrance;
+    @Column(nullable = false, unique = false, name = "date_delivrance")
+    private LocalDate dateDelivrance;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_etat_civil", nullable = false)
@@ -34,36 +34,36 @@ public class VisaTransformable {
         this.id = id;
     }
 
-    public String getDate_entre() {
-        return date_entre;
+    public String getDateEntre() {
+        return dateEntre;
     }
 
-    public void setDate_entre(String date_entre) {
-        this.date_entre = date_entre;
+    public void setDateEntre(String dateEntre) {
+        this.dateEntre = dateEntre;
     }
 
-    public String getNumero_passport() {
-        return numero_passport;
+    public String getNumeroPassport() {
+        return numeroPassport;
     }
 
-    public void setNumero_passport(String numero_passport) {
-        this.numero_passport = numero_passport;
+    public void setNumeroPassport(String numeroPassport) {
+        this.numeroPassport = numeroPassport;
     }
 
-    public LocalDate getDate_expiration() {
-        return date_expiration;
+    public LocalDate getDateExpiration() {
+        return dateExpiration;
     }
 
-    public void setDate_expiration(LocalDate date_expiration) {
-        this.date_expiration = date_expiration;
+    public void setDateExpiration(LocalDate dateExpiration) {
+        this.dateExpiration = dateExpiration;
     }
 
-    public LocalDate getDate_delivrance() {
-        return date_delivrance;
+    public LocalDate getDateDelivrance() {
+        return dateDelivrance;
     }
 
-    public void setDate_delivrance(LocalDate date_delivrance) {
-        this.date_delivrance = date_delivrance;
+    public void setDateDelivrance(LocalDate dateDelivrance) {
+        this.dateDelivrance = dateDelivrance;
     }
 
     public EtatCivil getEtatCivil() {

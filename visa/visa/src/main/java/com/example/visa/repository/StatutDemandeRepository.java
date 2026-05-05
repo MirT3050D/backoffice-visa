@@ -11,13 +11,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface StatutDemandeRepository extends JpaRepository<StatutDemande, Long> {
-	@Query("select s from StatutDemande s where s.demande_visa.id = :demandeVisaId order by s.date_statut desc, s.id desc")
+	@Query("select s from StatutDemande s where s.demandeVisa.id = :demandeVisaId order by s.dateStatut desc, s.id desc")
 	List<StatutDemande> findLatestByDemandeVisaId(@Param("demandeVisaId") Long demandeVisaId, Pageable pageable);
 
-	@Query("select s from StatutDemande s where s.demande_visa.id = :demandeVisaId order by s.date_statut desc, s.id desc")
+	@Query("select s from StatutDemande s where s.demandeVisa.id = :demandeVisaId order by s.dateStatut desc, s.id desc")
 	List<StatutDemande> findByDemandeVisaIdOrderByDateStatutDesc(@Param("demandeVisaId") Long demandeVisaId);
 
 	@Modifying
-	@Query("delete from StatutDemande s where s.demande_visa.id = :demandeVisaId")
+	@Query("delete from StatutDemande s where s.demandeVisa.id = :demandeVisaId")
 	void deleteByDemandeVisaId(@Param("demandeVisaId") Long demandeVisaId);
 }

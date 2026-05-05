@@ -54,8 +54,7 @@ public class DemandeVisaController {
         this.demandeVisaService = demandeVisaService;
         this.statutDemandeRepository = statutDemandeRepository;
         this.demandeVisaRepository = demandeVisaRepository;
-            }
-    
+    }
 
     @GetMapping("/visa-type")
     public String typeVisa(@RequestParam(value = "type_demande_id", required = false) Long typeDemandeId, Model model) {
@@ -351,7 +350,7 @@ public class DemandeVisaController {
                     .findLatestByDemandeVisaId(demande.getId(), PageRequest.of(0, 1))
                     .stream()
                     .findFirst()
-                    .map(StatutDemande::getType_statut_demande)
+                    .map(StatutDemande::getTypeStatutDemande)
                     .map(type -> type.getLabel())
                     .orElse("Creer");
             statutLabels.put(demande.getId(), label);
@@ -432,45 +431,58 @@ public class DemandeVisaController {
     @ResponseBody
     public ResponseEntity<List<DemandeVisa>> getDemandesByReference(
             @PathVariable String reference) {
+                List<DemandeVisa> data = new ArrayList<>();
         try {
-            if (reference == null || reference.trim().isEmpty()) {
-                return ResponseEntity.badRequest().build();
+
+            DemandeVisa demande_id = demandeVisaRepository.findById(Long.valueOf(reference)).orElse(null);
+            if (demande_id != null)
+            {
+                data.add(demande_id);
             }
-            List<DemandeVisa> retour = this.demandeVisaRepository.findByReferenceLike(reference.trim());
-            return ResponseEntity.ok(retour);
+            List<DemandeVisa> demande_passeport_id = demandeVisaRepository.findByPasseport_Id(Long.valueOf(reference));
+            if (demande_passeport_id != null)
+            {
+                data.addAll(demande_passeport_id);
+            }
+            List<DemandeVisa> demandes_passeport_ref = demandeVisaRepository.findByPasseport_NumPasseportContaining(reference);
+            if(demandes_passeport_ref.size() >0)
+            {
+                data.addAll(demandes_passeport_ref);
+            }
+            return ResponseEntity.ok(data);
+
         } catch (Exception e) {
-            logger.error("Erreur lors de la recuperation des demandes pour la reference: {}", reference, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            throw e;
         }
     }
 
-    @GetMapping("/reference/exact/{reference}")
-    @ResponseBody
-    public ResponseEntity<List<DemandeVisa>> getDemandesByReferenceExact(
-            @PathVariable String reference) {
-        try {
-            if (reference == null || reference.trim().isEmpty()) {
-                return ResponseEntity.badRequest().build();
-            }
+    // @GetMapping("/reference/exact/{reference}")
+    // @ResponseBody
+    // public ResponseEntity<List<DemandeVisa>> getDemandesByReferenceExact(
+    //         @PathVariable String reference) {
+    //     try {
+    //         if (reference == null || reference.trim().isEmpty()) {
+    //             return ResponseEntity.badRequest().build();
+    //         }
 
-            String trimmed = reference.trim();
-            Set<DemandeVisa> results = new LinkedHashSet<>();
+    //         String trimmed = reference.trim();
+    //         Set<DemandeVisa> results = new LinkedHashSet<>();
 
-            try {
-                Long refId = Long.parseLong(trimmed);
-                results.addAll(this.demandeVisaRepository.findByDemandeId(refId));
-                results.addAll(this.demandeVisaRepository.findByPasseportId(refId));
-            } catch (NumberFormatException e) {
-                logger.debug("Reference non numerique pour recherche exacte: {}", trimmed);
-            }
+    //         try {
+    //             Long refId = Long.parseLong(trimmed);
+    //             results.addAll(this.demandeVisaRepository.findByDemandeId(refId));
+    //             results.addAll(this.demandeVisaRepository.findByPasseportId(refId));
+    //         } catch (NumberFormatException e) {
+    //             logger.debug("Reference non numerique pour recherche exacte: {}", trimmed);
+    //         }
 
-            results.addAll(this.demandeVisaRepository.findByPasseportNumero(trimmed));
+    //         results.addAll(this.demandeVisaRepository.findByPasseportNumero(trimmed));
 
-            return ResponseEntity.ok(new ArrayList<>(results));
-        } catch (Exception e) {
-            logger.error("Erreur lors de la recuperation des demandes pour la reference exacte: {}", reference, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+    //         return ResponseEntity.ok(new ArrayList<>(results));
+    //     } catch (Exception e) {
+    //         logger.error("Erreur lors de la recuperation des demandes pour la reference exacte: {}", reference, e);
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    //     }
+    // }
 
 }
