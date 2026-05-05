@@ -144,6 +144,71 @@
             color: #64748b;
             white-space: nowrap;
         }
+
+        .qr-code-cell {
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .qr-code-cell img {
+            transition: transform 0.2s ease;
+        }
+
+        .qr-code-cell img:hover {
+            transform: scale(1.15);
+        }
+
+        .qr-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-modal.active {
+            display: flex;
+        }
+
+        .qr-modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            position: relative;
+        }
+
+        .qr-modal-content img {
+            max-width: 500px;
+            max-height: 500px;
+            border: 3px solid #4CAF50;
+            padding: 1rem;
+        }
+
+        .qr-modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+
+        .qr-modal-close:hover {
+            color: #ddd;
+        }
     </style>
 </head>
 <body>
@@ -197,6 +262,7 @@
                                 <th>Type Demande</th>
                                 <th>Type Visa</th>
                                 <th>Statut</th>
+                                <th>QR Code</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -204,7 +270,7 @@
                             <c:choose>
                                 <c:when test="${empty demandes}">
                                     <tr>
-                                        <td colspan="6" class="table-empty">Aucune demande enregistree pour le moment.</td>
+                                        <td colspan="7" class="table-empty">Aucune demande enregistree pour le moment.</td>
                                     </tr>
                                 </c:when>
                                 <c:otherwise>
@@ -240,6 +306,11 @@
                                                 </div>
                                             </td>
                                             <td>
+                                                <div class="qr-code-cell" onclick="openQrModal(${demande.id}, event)">
+                                                    <img src="${pageContext.request.contextPath}/qr/${demande.id}" alt="QR Code" width="50" height="50" style="border: 1px solid #ddd; padding: 2px;">
+                                                </div>
+                                            </td>
+                                            <td>
                                                 <div class="row-actions">
                                                     <a class="row-action row-action-edit" href="${pageContext.request.contextPath}/demande/${demande.id}/scan" title="Scanner">
                                                         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -271,7 +342,47 @@
         </div>
     </div>
 
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="qr-modal">
+        <button class="qr-modal-close" onclick="closeQrModal()">&times;</button>
+        <div class="qr-modal-content">
+            <img id="qrModalImage" src="" alt="QR Code">
+        </div>
+    </div>
+
     <script>
+        // QR Code Modal Functions
+        function openQrModal(demandeId, event) {
+            event.stopPropagation();
+            var modal = document.getElementById('qrModal');
+            var modalImage = document.getElementById('qrModalImage');
+            var contextPath = '${pageContext.request.contextPath}';
+            modalImage.src = contextPath + '/qr/' + demandeId;
+            modal.classList.add('active');
+        }
+
+        function closeQrModal() {
+            var modal = document.getElementById('qrModal');
+            modal.classList.remove('active');
+        }
+
+        // Close modal when clicking outside the content
+        document.addEventListener('DOMContentLoaded', function() {
+            var modal = document.getElementById('qrModal');
+            modal.addEventListener('click', function(event) {
+                if (event.target === this) {
+                    closeQrModal();
+                }
+            });
+        });
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeQrModal();
+            }
+        });
+
         (function () {
             // Sidebar toggle
             var sidebar = document.getElementById('navSidebar');

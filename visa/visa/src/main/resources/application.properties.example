@@ -3,6 +3,8 @@ spring.datasource.url=jdbc:postgresql://localhost:5432/visa
 spring.datasource.username=postgres
 spring.datasource.password=postgres
 spring.datasource.driver-class-name=org.postgresql.Driver
+# IP de l'ordinateur sur le reseau local (mettre l'IP reelle, pas 127.0.0.1)
+app.server.ip=10.33.43.229
 
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
@@ -18,5 +20,5 @@ server.servlet.encoding.force=true
 spring.http.encoding.charset=UTF-8
 spring.http.encoding.enabled=true
 
-# Dossier de stockage des scans
-app.upload.dir=uploads
+server.address=0.0.0.0
+server.port=8080
