@@ -1,8 +1,17 @@
 package com.example.visa.controller;
 
-import org.springframework.stereotype.Controller;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -13,32 +22,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.boot.jackson.autoconfigure.JacksonProperties.Json;
-import org.springframework.data.domain.PageRequest;
 
 import com.example.visa.dto.CreerDemandeVisaForm;
+import com.example.visa.dto.DemandeVisaResponseDto;
 import com.example.visa.dto.FinaliserSansDonneesForm;
 import com.example.visa.dto.FinaliserTransfertSansDonneesForm;
 import com.example.visa.dto.PasseportForm;
 import com.example.visa.dto.TransfertResult;
-import com.example.visa.service.DemandeVisaService;
-
 import com.example.visa.model.CarteResident;
-import com.example.visa.model.Passeport;
 import com.example.visa.model.DemandeVisa;
+import com.example.visa.model.Passeport;
 import com.example.visa.model.StatutDemande;
+import com.example.visa.repository.DemandeVisaRepository;
 import com.example.visa.repository.StatutDemandeRepository;
 import com.example.visa.service.DemandeVisaService;
-import com.example.visa.repository.DemandeVisaRepository;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @Controller
 @RequestMapping("/demande-visa")
@@ -429,35 +426,90 @@ public class DemandeVisaController {
 
     @GetMapping("/reference/{reference}")
     @ResponseBody
-    public ResponseEntity<List<DemandeVisa>> getDemandesByReference(
+    public ResponseEntity<List<DemandeVisaResponseDto>> getDemandesByReference(
             @PathVariable String reference) {
-                List<DemandeVisa> data = new ArrayList<>();
+        List<DemandeVisaResponseDto> data = new ArrayList<>();
+        Set<Long> seenIds = new LinkedHashSet<>();
+        java.time.format.DateTimeFormatter dateFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        
         try {
+            // Try numeric reference first
             try {
                 Long reference_long = Long.valueOf(reference);
                 DemandeVisa demande_id = demandeVisaRepository.findById(reference_long).orElse(null);
-                if (demande_id != null)
-                {
-                    data.add(demande_id);
+                if (demande_id != null && !seenIds.contains(demande_id.getId())) {
+                    seenIds.add(demande_id.getId());
+                    data.add(buildResponseDto(demande_id, dateFormatter));
                 }
                 List<DemandeVisa> demande_passeport_id = demandeVisaRepository.findByPasseport_Id(reference_long);
-                if (demande_passeport_id != null)
-                {
-                    data.addAll(demande_passeport_id);
+                if (demande_passeport_id != null) {
+                    for (DemandeVisa demande : demande_passeport_id) {
+                        if (!seenIds.contains(demande.getId())) {
+                            seenIds.add(demande.getId());
+                            data.add(buildResponseDto(demande, dateFormatter));
+                        }
+                    }
                 }
-            } catch (Exception e) {
-                
+            } catch (NumberFormatException e) {
+                // Not a numeric reference, continue with text search
             }
+            
+            // Search by passport number
             List<DemandeVisa> demandes_passeport_ref = demandeVisaRepository.findByPasseport_NumPasseportContaining(reference);
-            if(demandes_passeport_ref.size() >0)
-            {
-                data.addAll(demandes_passeport_ref);
+            if (demandes_passeport_ref != null && demandes_passeport_ref.size() > 0) {
+                for (DemandeVisa demande : demandes_passeport_ref) {
+                    if (!seenIds.contains(demande.getId())) {
+                        seenIds.add(demande.getId());
+                        data.add(buildResponseDto(demande, dateFormatter));
+                    }
+                }
             }
+            
+            // Add all remaining demandes (those that don't match the search criteria)
+            List<DemandeVisa> allDemandes = demandeVisaRepository.findAll();
+            if (allDemandes != null) {
+                for (DemandeVisa demande : allDemandes) {
+                    if (!seenIds.contains(demande.getId())) {
+                        seenIds.add(demande.getId());
+                        data.add(buildResponseDto(demande, dateFormatter));
+                    }
+                }
+            }
+            
             return ResponseEntity.ok(data);
 
         } catch (Exception e) {
+            logger.error("Error retrieving demandes for reference: {}", reference, e);
             throw e;
         }
+    }
+
+    private DemandeVisaResponseDto buildResponseDto(DemandeVisa demande, java.time.format.DateTimeFormatter dateFormatter) {
+        // Get current status
+        String currentStatut = statutDemandeRepository
+                .findLatestByDemandeVisaId(demande.getId(), PageRequest.of(0, 1))
+                .stream()
+                .findFirst()
+                .map(StatutDemande::getTypeStatutDemande)
+                .map(type -> type.getLabel())
+                .orElse("Creer");
+
+        // Get history
+        List<java.util.Map<String, String>> historique = statutDemandeRepository
+                .findByDemandeVisaIdOrderByDateStatutDesc(demande.getId())
+                .stream()
+                .map(statut -> {
+                    java.util.Map<String, String> item = new java.util.HashMap<>();
+                    String dateValue = statut.getDateStatut() == null
+                            ? ""
+                            : statut.getDateStatut().format(dateFormatter);
+                    item.put("label", statut.getTypeStatutDemande().getLabel());
+                    item.put("date", dateValue);
+                    return item;
+                })
+                .collect(java.util.stream.Collectors.toList());
+
+        return new DemandeVisaResponseDto(demande, currentStatut, historique);
     }
 
     // @GetMapping("/reference/exact/{reference}")

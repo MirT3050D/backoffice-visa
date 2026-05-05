@@ -397,6 +397,11 @@ body {
    BOUTONS
    =================================== */
 
+button,
+input[type="button"] {
+    color: var(--dark) !important;
+}
+
 .btn {
     display: inline-block;
     padding: 0.75rem 1.5rem;
