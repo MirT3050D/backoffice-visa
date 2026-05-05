@@ -433,16 +433,20 @@ public class DemandeVisaController {
             @PathVariable String reference) {
                 List<DemandeVisa> data = new ArrayList<>();
         try {
-
-            DemandeVisa demande_id = demandeVisaRepository.findById(Long.valueOf(reference)).orElse(null);
-            if (demande_id != null)
-            {
-                data.add(demande_id);
-            }
-            List<DemandeVisa> demande_passeport_id = demandeVisaRepository.findByPasseport_Id(Long.valueOf(reference));
-            if (demande_passeport_id != null)
-            {
-                data.addAll(demande_passeport_id);
+            try {
+                Long reference_long = Long.valueOf(reference);
+                DemandeVisa demande_id = demandeVisaRepository.findById(reference_long).orElse(null);
+                if (demande_id != null)
+                {
+                    data.add(demande_id);
+                }
+                List<DemandeVisa> demande_passeport_id = demandeVisaRepository.findByPasseport_Id(reference_long);
+                if (demande_passeport_id != null)
+                {
+                    data.addAll(demande_passeport_id);
+                }
+            } catch (Exception e) {
+                
             }
             List<DemandeVisa> demandes_passeport_ref = demandeVisaRepository.findByPasseport_NumPasseportContaining(reference);
             if(demandes_passeport_ref.size() >0)
