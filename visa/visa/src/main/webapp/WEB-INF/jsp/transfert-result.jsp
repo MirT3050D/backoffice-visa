@@ -88,15 +88,15 @@
                 <div class="result-grid">
                     <div class="result-item">
                         <span>Numero passeport</span>
-                        <strong>${nouveauPasseport.num_passeport}</strong>
+                        <strong>${nouveauPasseport.numPasseport}</strong>
                     </div>
                     <div class="result-item">
                         <span>Date de delivrance</span>
-                        <strong>${nouveauPasseport.date_delivrance}</strong>
+                        <strong>${nouveauPasseport.dateDelivrance}</strong>
                     </div>
                     <div class="result-item">
                         <span>Date d'expiration</span>
-                        <strong>${nouveauPasseport.date_expiration}</strong>
+                        <strong>${nouveauPasseport.dateExpiration}</strong>
                     </div>
                 </div>
             </div>

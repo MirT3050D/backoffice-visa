@@ -83,7 +83,7 @@ public class FrontController {
                     .findLatestByDemandeVisaId(demande.getId(), PageRequest.of(0, 1))
                     .stream()
                     .findFirst()
-                    .map(StatutDemande::getType_statut_demande)
+                    .map(StatutDemande::getTypeStatutDemande)
                     .map(type -> type.getLabel())
                     .orElse("Creer");
             statutLabels.put(demande.getId(), label);
@@ -92,10 +92,10 @@ public class FrontController {
                 .stream()
                 .map(statut -> {
                 Map<String, String> item = new HashMap<>();
-                String dateValue = statut.getDate_statut() == null
+                String dateValue = statut.getDateStatut() == null
                     ? ""
-                    : statut.getDate_statut().format(dateFormatter);
-                item.put("label", statut.getType_statut_demande().getLabel());
+                    : statut.getDateStatut().format(dateFormatter);
+                item.put("label", statut.getTypeStatutDemande().getLabel());
                 item.put("date", dateValue);
                 return item;
                 })
@@ -276,30 +276,30 @@ public class FrontController {
             .collect(Collectors.toSet());
 
         DemandeVisaEditForm form = new DemandeVisaEditForm();
-        form.setDateDemande(demande.getDate_demande());
-        form.setTypeDemandeId(demande.getType_demande_visa().getId());
-        form.setTypeVisaId(demande.getType_visa().getId());
+        form.setDateDemande(demande.getDateDemande());
+        form.setTypeDemandeId(demande.getTypeDemandeVisa().getId());
+        form.setTypeVisaId(demande.getTypeVisa().getId());
         if (selectedTypeVisaId != null) {
             form.setTypeVisaId(selectedTypeVisaId);
         }
         form.setNom(demande.getPasseport().getEtatCivil().getNom());
         form.setPrenom(demande.getPasseport().getEtatCivil().getPrenom());
-        form.setNomJeuneFille(demande.getPasseport().getEtatCivil().getNom_jeune_fille());
+        form.setNomJeuneFille(demande.getPasseport().getEtatCivil().getNomJeuneFille());
         form.setEmail(demande.getPasseport().getEtatCivil().getEmail());
-        form.setNumeroTelephone(demande.getPasseport().getEtatCivil().getNum_tel());
-        form.setDateNaissance(demande.getPasseport().getEtatCivil().getDate_naissance());
-        form.setLieuNaissance(demande.getPasseport().getEtatCivil().getLieu_naissance());
-        form.setAdresseMada(demande.getPasseport().getEtatCivil().getAdresse_mada());
+        form.setNumeroTelephone(demande.getPasseport().getEtatCivil().getNumTel());
+        form.setDateNaissance(demande.getPasseport().getEtatCivil().getDateNaissance());
+        form.setLieuNaissance(demande.getPasseport().getEtatCivil().getLieuNaissance());
+        form.setAdresseMada(demande.getPasseport().getEtatCivil().getAdresseMada());
         form.setNationaliteId(demande.getPasseport().getEtatCivil().getNationalite().getId());
-        form.setSituationFamilialeId(demande.getPasseport().getEtatCivil().getSituation_familiale().getId());
-        form.setNumeroPasseport(demande.getPasseport().getNum_passeport());
-        form.setDateDelivrancePasseport(demande.getPasseport().getDate_delivrance());
-        form.setDateExpirationPasseport(demande.getPasseport().getDate_expiration());
+        form.setSituationFamilialeId(demande.getPasseport().getEtatCivil().getSituationFamiliale().getId());
+        form.setNumeroPasseport(demande.getPasseport().getNumPasseport());
+        form.setDateDelivrancePasseport(demande.getPasseport().getDateDelivrance());
+        form.setDateExpirationPasseport(demande.getPasseport().getDateExpiration());
         demandeVisaService.getVisaTransformableByEtatCivilId(demande.getPasseport().getEtatCivil().getId())
                 .ifPresent(visaTransformable -> {
-                    form.setVisaTranNumPasseport(visaTransformable.getNumero_passport());
-                    form.setVisaTranDateDelivrance(visaTransformable.getDate_delivrance());
-                    form.setVisaTranDateExpiration(visaTransformable.getDate_expiration());
+                    form.setVisaTranNumPasseport(visaTransformable.getNumeroPassport());
+                    form.setVisaTranDateDelivrance(visaTransformable.getDateDelivrance());
+                    form.setVisaTranDateExpiration(visaTransformable.getDateExpiration());
                 });
         form.setChampsCommunsCoches(champsCommunsCoches.stream().toList());
         form.setChampsSpecifiquesCoches(champsSpecifiquesCoches.stream().toList());

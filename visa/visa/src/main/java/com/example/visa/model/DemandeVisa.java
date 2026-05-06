@@ -10,16 +10,16 @@ public class DemandeVisa {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 200)
-    private LocalDate date_demande;
+    @Column(nullable = false, length = 200, name = "date_demande")
+    private LocalDate dateDemande;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_type_demande_visa", nullable = false)
-    private TypeDemandeVisa type_demande_visa;
+    private TypeDemandeVisa typeDemandeVisa;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_type_visa", nullable = false)
-    private TypeVisa type_visa;
+    private TypeVisa typeVisa;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_passeport", nullable = false)
@@ -32,16 +32,16 @@ public class DemandeVisa {
         return id;
     }
 
-    public LocalDate getDate_demande() {
-        return date_demande;
+    public LocalDate getDateDemande() {
+        return dateDemande;
     }
 
-    public TypeDemandeVisa getType_demande_visa() {
-        return type_demande_visa;
+    public TypeDemandeVisa getTypeDemandeVisa() {
+        return typeDemandeVisa;
     }
 
-    public TypeVisa getType_visa() {
-        return type_visa;
+    public TypeVisa getTypeVisa() {
+        return typeVisa;
     }
 
     public Passeport getPasseport() {
@@ -52,16 +52,16 @@ public class DemandeVisa {
         return estVerrouille;
     }
 
-    public void setDate_demande(LocalDate date_demande) {
-        this.date_demande = date_demande;
+    public void setDateDemande(LocalDate dateDemande) {
+        this.dateDemande = dateDemande;
     }
 
-    public void setType_demande_visa(TypeDemandeVisa type_demande_visa) {
-        this.type_demande_visa = type_demande_visa;
+    public void setTypeDemandeVisa(TypeDemandeVisa typeDemandeVisa) {
+        this.typeDemandeVisa = typeDemandeVisa;
     }
 
-    public void setType_visa(TypeVisa type_visa) {
-        this.type_visa = type_visa;
+    public void setTypeVisa(TypeVisa typeVisa) {
+        this.typeVisa = typeVisa;
     }
 
     public void setPasseport(Passeport passeport) {
