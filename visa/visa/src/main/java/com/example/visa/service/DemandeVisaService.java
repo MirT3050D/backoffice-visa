@@ -753,5 +753,76 @@ public class DemandeVisaService {
 		return demandeVisaRepository.findAll();
 	}
 
+	@Transactional
+	public void enregistrerPhotoDemande(Long idDemande, String base64Image) {
 
+		DemandeVisa demande = demandeVisaRepository.findById(idDemande)
+				.orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+
+		if (base64Image == null || base64Image.isBlank()) {
+			throw new IllegalArgumentException("Image vide");
+		}
+
+		try {
+
+			// enlever data:image/png;base64,
+			String imageData = base64Image.split(",")[1];
+
+			byte[] decodedBytes = java.util.Base64
+					.getDecoder()
+					.decode(imageData);
+
+			Path demandeDir = getDemandeUploadDir(idDemande);
+
+			Files.createDirectories(demandeDir);
+
+			String fileName = "photo-" + idDemande + ".png";
+
+			Path target = demandeDir.resolve(fileName);
+
+			// écrase automatiquement l'ancienne photo
+			Files.write(target, decodedBytes);
+
+			/*
+			* Vérifier le dernier statut
+			*/
+			List<StatutDemande> statuts = statutDemandeRepository
+					.findByDemandeVisaIdOrderByDateStatutDesc(idDemande);
+
+			boolean dejaPhotoTerminee = false;
+
+			if (!statuts.isEmpty()) {
+
+				StatutDemande dernierStatut = statuts.get(0);
+
+				if (dernierStatut.getTypeStatutDemande() != null
+						&& dernierStatut.getTypeStatutDemande().getRang() == 2) {
+
+					dejaPhotoTerminee = true;
+				}
+			}
+
+			/*
+			* Ajouter le statut seulement si absent
+			*/
+			if (!dejaPhotoTerminee) {
+
+				TypeStatutDemande typeStatut = typeStatutDemandeRepository
+						.findByRang(2)
+						.orElseThrow(() ->
+								new IllegalStateException("Statut rang 2 introuvable"));
+
+				StatutDemande statutDemande = new StatutDemande();
+
+				statutDemande.setDemandeVisa(demande);
+				statutDemande.setTypeStatutDemande(typeStatut);
+				statutDemande.setDateStatut(java.time.LocalDate.now());
+
+				statutDemandeRepository.save(statutDemande);
+			}
+
+		} catch (IOException e) {
+			throw new IllegalStateException("Erreur sauvegarde photo", e);
+		}
+	}
 }

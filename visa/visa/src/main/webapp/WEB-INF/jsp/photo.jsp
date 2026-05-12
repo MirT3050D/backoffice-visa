@@ -263,7 +263,10 @@
                             <div class="preview-card">
                                 <h3>Prévisualisation</h3>
 
-                                <img id="preview" />
+                                <img id="preview"
+                                    src="${pageContext.request.contextPath}/demande/${id}/photo/view"
+                                    onerror="this.style.display='none';" 
+                                />
                             </div>
 
                             <div class="camera-actions">
@@ -320,6 +323,16 @@
     let video = document.getElementById('video');
     let canvas = document.getElementById('canvas');
     let preview = document.getElementById('preview');
+
+    preview.onload = function () {
+        // photo trouvée
+        preview.style.display = 'block';
+    };
+
+    preview.onerror = function () {
+        // aucune photo encore enregistrée
+        preview.style.display = 'none';
+    };
 
     navigator.mediaDevices.getUserMedia({
         video: true
