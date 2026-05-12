@@ -23,11 +23,13 @@ public class PasseportForm {
     private String numero_passport;
     private LocalDate date_expiration;
     private LocalDate date_delivrance;
+    private Long paysId;
     
     // Champs Visa Transformable
     private String visaTranNumPasseport;
     private LocalDate visaTranDateDelivrance;
     private LocalDate visaTranDateExpiration;
+    private Long visaTranPaysId;
     
     // Champs meÌtier
     private Long typeDemandeId;
@@ -140,6 +142,14 @@ public class PasseportForm {
         this.date_delivrance = date_delivrance;
     }
 
+    public Long getPaysId() {
+        return paysId;
+    }
+
+    public void setPaysId(Long paysId) {
+        this.paysId = paysId;
+    }
+
     // === Getters et Setters Visa Transformable ===
 
     public String getVisaTranNumPasseport() {
@@ -164,6 +174,14 @@ public class PasseportForm {
 
     public void setVisaTranDateExpiration(LocalDate visaTranDateExpiration) {
         this.visaTranDateExpiration = visaTranDateExpiration;
+    }
+
+    public Long getVisaTranPaysId() {
+        return visaTranPaysId;
+    }
+
+    public void setVisaTranPaysId(Long visaTranPaysId) {
+        this.visaTranPaysId = visaTranPaysId;
     }
 
     // === Getters et Setters metier ===

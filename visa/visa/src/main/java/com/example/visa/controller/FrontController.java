@@ -374,6 +374,9 @@ public class FrontController {
             java.nio.file.Files.createDirectories(path.getParent());
             java.nio.file.Files.write(path, decodedBytes);
 
+            // Changer le statut de la demande en "Signature créée" (rang 3)
+            demandeVisaService.changerStatutDemande(id, 3);
+
             return "OK";
         } catch (Exception e) {
             return "ERROR";
