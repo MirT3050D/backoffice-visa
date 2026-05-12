@@ -748,21 +748,46 @@ public class DemandeVisaService {
 
 			Path target = demandeDir.resolve(fileName);
 
+			// écrase automatiquement l'ancienne photo
 			Files.write(target, decodedBytes);
 
-			// changement statut -> Photo Termine
-			TypeStatutDemande typeStatut = typeStatutDemandeRepository
-					.findByRang(2)
-					.orElseThrow(() ->
-							new IllegalStateException("Statut rang 2 (photo terminee) introuvable"));
+			/*
+			* Vérifier le dernier statut
+			*/
+			List<StatutDemande> statuts = statutDemandeRepository
+					.findByDemandeVisaIdOrderByDateStatutDesc(idDemande);
 
-			StatutDemande statutDemande = new StatutDemande();
+			boolean dejaPhotoTerminee = false;
 
-			statutDemande.setDemandeVisa(demande);
-			statutDemande.setTypeStatutDemande(typeStatut);
-			statutDemande.setDateStatut(java.time.LocalDate.now());
+			if (!statuts.isEmpty()) {
 
-			statutDemandeRepository.save(statutDemande);
+				StatutDemande dernierStatut = statuts.get(0);
+
+				if (dernierStatut.getTypeStatutDemande() != null
+						&& dernierStatut.getTypeStatutDemande().getRang() == 2) {
+
+					dejaPhotoTerminee = true;
+				}
+			}
+
+			/*
+			* Ajouter le statut seulement si absent
+			*/
+			if (!dejaPhotoTerminee) {
+
+				TypeStatutDemande typeStatut = typeStatutDemandeRepository
+						.findByRang(2)
+						.orElseThrow(() ->
+								new IllegalStateException("Statut rang 2 introuvable"));
+
+				StatutDemande statutDemande = new StatutDemande();
+
+				statutDemande.setDemandeVisa(demande);
+				statutDemande.setTypeStatutDemande(typeStatut);
+				statutDemande.setDateStatut(java.time.LocalDate.now());
+
+				statutDemandeRepository.save(statutDemande);
+			}
 
 		} catch (IOException e) {
 			throw new IllegalStateException("Erreur sauvegarde photo", e);

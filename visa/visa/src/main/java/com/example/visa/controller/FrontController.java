@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.example.visa.model.DemandeVisa;
 import com.example.visa.model.Dossier;
 import com.example.visa.model.StatutDemande;
@@ -40,6 +41,8 @@ import java.util.Comparator;
 import java.util.Set;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
+
+import java.io.IOException;
 
 @Controller
 public class FrontController {
@@ -370,4 +373,25 @@ public class FrontController {
         return "OK";
     }
 
+    @GetMapping("/demande/{id}/photo/view")
+    @ResponseBody
+    public ResponseEntity<Resource> afficherPhoto(
+            @PathVariable Long id) throws IOException {
+
+        Path photoPath = Paths.get(
+                "uploads",
+                "demande-" + id,
+                "photo-" + id + ".png"
+        );
+
+        if (!Files.exists(photoPath)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Resource resource = new UrlResource(photoPath.toUri());
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(resource);
+    }
 }
