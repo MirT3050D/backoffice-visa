@@ -358,26 +358,16 @@ public class FrontController {
 
     @PostMapping("/demande/{id}/photo")
     @ResponseBody
-    public String savePhoto(@PathVariable Long id, @RequestBody Map<String, String> body) {
+    public String savePhoto(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
 
-        String base64Image = body.get("image");
+        demandeVisaService.enregistrerPhotoDemande(
+                id,
+                body.get("image")
+        );
 
-        // enlever prefix data:image/png;base64,
-        String imageData = base64Image.split(",")[1];
-
-        byte[] decodedBytes = java.util.Base64.getDecoder().decode(imageData);
-
-        try {
-            String fileName = "photo_" + id + ".png";
-            java.nio.file.Path path = java.nio.file.Paths.get("uploads/" + fileName);
-
-            java.nio.file.Files.createDirectories(path.getParent());
-            java.nio.file.Files.write(path, decodedBytes);
-
-            return "OK";
-        } catch (Exception e) {
-            return "ERROR";
-        }
+        return "OK";
     }
 
 }
