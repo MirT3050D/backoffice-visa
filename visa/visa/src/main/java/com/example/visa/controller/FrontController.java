@@ -188,6 +188,9 @@ public class FrontController {
                 
                 demande.setCheminSignature("uploads/signature/" + fileName);
                 demandeVisaRepository.save(demande);
+                
+                // Changer le statut de la demande en "Signature créée" (rang 4)
+                demandeVisaService.changerStatutDemande(idDemande, 4);
             }
 
             return ResponseEntity.ok().build();
