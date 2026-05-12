@@ -454,4 +454,29 @@ public class FrontController {
                 .contentType(MediaType.IMAGE_PNG)
                 .body(resource);
     }
+
+    @GetMapping("/demande/{id}/signature/view")
+    @ResponseBody
+    public ResponseEntity<Resource> afficherSignature(
+            @PathVariable Long id) throws IOException {
+
+        DemandeVisa demande = demandeVisaRepository.findById(id)
+                .orElse(null);
+
+        if (demande == null || demande.getCheminSignature() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Path signaturePath = Paths.get(demande.getCheminSignature());
+
+        if (!Files.exists(signaturePath)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Resource resource = new UrlResource(signaturePath.toUri());
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(resource);
+    }
 }

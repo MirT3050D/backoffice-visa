@@ -170,10 +170,21 @@
                     </div>
 
                     <!-- SIGNATURE -->
-                    <div class="signature-box">
-                        <div class="signature-placeholder">
-                            Signature
-                        </div>
+                    <div class="signature-box" id="signature-container-${demande.id}">
+                        <c:if test="${not empty demande.cheminSignature}">
+                            <img
+                                src="${pageContext.request.contextPath}/demande/${demande.id}/signature/view"
+                                alt="Signature demandeur"
+                                class="demande-photo"
+                                style="object-fit: contain;"
+                                onerror="document.getElementById('signature-container-${demande.id}').innerHTML='<div class=&quot;signature-placeholder&quot;>Signature non disponible</div>';"
+                            />
+                        </c:if>
+                        <c:if test="${empty demande.cheminSignature}">
+                            <div class="signature-placeholder">
+                                Signature
+                            </div>
+                        </c:if>
                     </div>
                 </div>
             </section>
