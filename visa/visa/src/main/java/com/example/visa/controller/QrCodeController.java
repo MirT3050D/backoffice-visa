@@ -17,7 +17,7 @@ public class QrCodeController {
 
     private final QrCodeService qrCodeService;
 
-    @Value("${app.server.ip}")
+    @Value("${app.server.ip:localhost}")
     private String serverIp;
 
     public QrCodeController(QrCodeService qrCodeService) {

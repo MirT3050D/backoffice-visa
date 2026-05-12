@@ -30,6 +30,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.visa.dto.DemandeVisaEditForm;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.example.visa.model.DemandeVisa;
 import com.example.visa.model.Dossier;
 import com.example.visa.model.StatutDemande;
@@ -42,6 +45,8 @@ import com.example.visa.service.DemandeVisaService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
+
+import java.io.IOException;
 
 @Controller
 public class FrontController {
@@ -390,4 +395,63 @@ public class FrontController {
         return "visa-demande";
     }
 
+    @GetMapping("/demande/{id}/photo")
+    public String openCamera(@PathVariable Long id, Model model) {
+        model.addAttribute("id", id);
+        return "photo"; // photo.jsp
+    }
+
+    @PostMapping("/demande/{id}/photo")
+    @ResponseBody
+    public String savePhoto(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+
+        demandeVisaService.enregistrerPhotoDemande(
+                id,
+                body.get("image")
+        );
+
+        // enlever prefix data:image/png;base64,
+        String imageData = base64Image.split(",")[1];
+
+        byte[] decodedBytes = java.util.Base64.getDecoder().decode(imageData);
+
+        try {
+            String fileName = "photo_" + id + ".png";
+            java.nio.file.Path path = java.nio.file.Paths.get("uploads/" + fileName);
+
+            java.nio.file.Files.createDirectories(path.getParent());
+            java.nio.file.Files.write(path, decodedBytes);
+
+            // Changer le statut de la demande en "Signature créée" (rang 3)
+            demandeVisaService.changerStatutDemande(id, 3);
+
+            return "OK";
+        } catch (Exception e) {
+            return "ERROR";
+        }
+    }
+
+    @GetMapping("/demande/{id}/photo/view")
+    @ResponseBody
+    public ResponseEntity<Resource> afficherPhoto(
+            @PathVariable Long id) throws IOException {
+
+        Path photoPath = Paths.get(
+                "uploads",
+                "demande-" + id,
+                "photo-" + id + ".png"
+        );
+
+        if (!Files.exists(photoPath)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Resource resource = new UrlResource(photoPath.toUri());
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(resource);
+    }
 }

@@ -6,6 +6,7 @@ public class FinaliserTransfertSansDonneesForm extends FinaliserSansDonneesForm 
     private String nouveauNumeroPasseport;
     private LocalDate nouveauDateDelivrance;
     private LocalDate nouveauDateExpiration;
+    private Long nouveauPaysId;
 
     public String getNouveauNumeroPasseport() {
         return nouveauNumeroPasseport;
@@ -29,5 +30,13 @@ public class FinaliserTransfertSansDonneesForm extends FinaliserSansDonneesForm 
 
     public void setNouveauDateExpiration(LocalDate nouveauDateExpiration) {
         this.nouveauDateExpiration = nouveauDateExpiration;
+    }
+
+    public Long getNouveauPaysId() {
+        return nouveauPaysId;
+    }
+
+    public void setNouveauPaysId(Long nouveauPaysId) {
+        this.nouveauPaysId = nouveauPaysId;
     }
 }

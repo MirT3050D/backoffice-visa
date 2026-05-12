@@ -23,6 +23,10 @@ public class Passeport {
     @JoinColumn(name = "id_etat_civil", nullable = false)
     private EtatCivil etatCivil;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_pays", nullable = true)
+    private Pays pays;
+
     public Long getId() {
         return id;
     }
@@ -59,6 +63,12 @@ public class Passeport {
         this.etatCivil = etatCivil;
     }
 
+    public Pays getPays() {
+        return pays;
+    }
 
+    public void setPays(Pays pays) {
+        this.pays = pays;
+    }
     
 }

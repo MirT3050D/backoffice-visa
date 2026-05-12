@@ -49,6 +49,7 @@ public class DemandeVisaService {
     private final CarteResidentRepository carteResidentRepository;
     private final HistoriquePasseportVisaRepository historiquePasseportVisaRepository;
     private final VilleRepository villeRepository;
+    private final PaysRepository paysRepository;
 
 	@Value("${app.upload.dir:uploads}")
 	private String uploadBaseDir;
@@ -72,7 +73,8 @@ public class DemandeVisaService {
             TypeStatutVisaRepository typeStatutVisaRepository,
             CarteResidentRepository carteResidentRepository,
             HistoriquePasseportVisaRepository historiquePasseportVisaRepository,
-            VilleRepository villeRepository) {
+            VilleRepository villeRepository,
+            PaysRepository paysRepository) {
 		this.demandeVisaRepository = demandeVisaRepository;
 		this.etatCivilRepository = etatCivilRepository;
 		this.passeportRepository = passeportRepository;
@@ -92,6 +94,11 @@ public class DemandeVisaService {
         this.carteResidentRepository = carteResidentRepository;
         this.historiquePasseportVisaRepository = historiquePasseportVisaRepository;
         this.villeRepository = villeRepository;
+        this.paysRepository = paysRepository;
+	}
+
+	public List<Pays> getAllPays() {
+		return paysRepository.findAll();
 	}
 
 	public List<TypeVisa> getAllTypesVisa() {
@@ -232,6 +239,9 @@ public class DemandeVisaService {
 		passeport.setDateDelivrance(form.getDateDelivrancePasseport());
 		passeport.setDateExpiration(form.getDateExpirationPasseport());
 		passeport.setEtatCivil(savedEtatCivil);
+		if (form.getPaysId() != null) {
+			passeport.setPays(paysRepository.findById(form.getPaysId()).orElse(null));
+		}
 		Passeport savedPasseport = passeportRepository.save(passeport);
 
 		VisaTransformable visaTransformable = new VisaTransformable();
@@ -240,6 +250,9 @@ public class DemandeVisaService {
 		visaTransformable.setDateDelivrance(form.getVisaTranDateDelivrance());
 		visaTransformable.setDateExpiration(form.getVisaTranDateExpiration());
 		visaTransformable.setEtatCivil(savedEtatCivil);
+		if (form.getVisaTranPaysId() != null) {
+			visaTransformable.setPays(paysRepository.findById(form.getVisaTranPaysId()).orElse(null));
+		}
 		visaTransformableRepository.save(visaTransformable);
 
 		DemandeVisa demandeVisa = new DemandeVisa();
@@ -292,6 +305,13 @@ public class DemandeVisaService {
 		statutDemande.setTypeStatutDemande(statut);
 		statutDemande.setDateStatut(java.time.LocalDateTime.now().toLocalDate());
 		statutDemandeRepository.save(statutDemande);
+	}
+
+	@Transactional
+	public void changerStatutDemande(Long demandeId, int rang) {
+		DemandeVisa demande = demandeVisaRepository.findById(demandeId)
+			.orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+		creerStatutInitial(demande, rang);
 	}
 
 	@Transactional
@@ -411,7 +431,7 @@ public class DemandeVisaService {
 
 	@Transactional
 	public Passeport creerTransfertAvecDonnees(Long visaId, String numeroPasseport,
-			java.time.LocalDate dateDelivrance, java.time.LocalDate dateExpiration) {
+			java.time.LocalDate dateDelivrance, java.time.LocalDate dateExpiration, Long paysId) {
 		Visa visa = visaRepository.findById(visaId)
 				.orElseThrow(() -> new IllegalArgumentException("Visa introuvable"));
 		Passeport nouveauPasseport = new Passeport();
@@ -419,6 +439,9 @@ public class DemandeVisaService {
 		nouveauPasseport.setDateDelivrance(dateDelivrance);
 		nouveauPasseport.setDateExpiration(dateExpiration);
 		nouveauPasseport.setEtatCivil(visa.getEtatCivil());
+		if (paysId != null) {
+			nouveauPasseport.setPays(paysRepository.findById(paysId).orElse(null));
+		}
 		Passeport savedPasseport = passeportRepository.save(nouveauPasseport);
 
 		HistoriquePasseportVisa historique = new HistoriquePasseportVisa();
@@ -497,6 +520,9 @@ public class DemandeVisaService {
 		nouveauPasseport.setDateDelivrance(form.getNouveauDateDelivrance());
 		nouveauPasseport.setDateExpiration(form.getNouveauDateExpiration());
 		nouveauPasseport.setEtatCivil(demandeNouveauTitre.getPasseport().getEtatCivil());
+		if (form.getNouveauPaysId() != null) {
+			nouveauPasseport.setPays(paysRepository.findById(form.getNouveauPaysId()).orElse(null));
+		}
 		Passeport savedNouveauPasseport = passeportRepository.save(nouveauPasseport);
 
 		// 7. Lier le nouveau passeport au visa cree via l'historique
@@ -556,6 +582,9 @@ public class DemandeVisaService {
 		passeport.setNumPasseport(form.getNumeroPasseport());
 		passeport.setDateDelivrance(form.getDateDelivrancePasseport());
 		passeport.setDateExpiration(form.getDateExpirationPasseport());
+		if (form.getPaysId() != null) {
+			passeport.setPays(paysRepository.findById(form.getPaysId()).orElse(null));
+		}
 
 		if (form.getTypeVisaId() != null) {
 			TypeVisa typeVisa = typeVisaRepository.findById(form.getTypeVisaId())
@@ -579,6 +608,9 @@ public class DemandeVisaService {
 		visaTransformable.setNumeroPassport(form.getVisaTranNumPasseport());
 		visaTransformable.setDateDelivrance(form.getVisaTranDateDelivrance());
 		visaTransformable.setDateExpiration(form.getVisaTranDateExpiration());
+		if (form.getVisaTranPaysId() != null) {
+			visaTransformable.setPays(paysRepository.findById(form.getVisaTranPaysId()).orElse(null));
+		}
 
 		etatCivilRepository.save(etatCivil);
 		passeportRepository.save(passeport);
@@ -721,5 +753,76 @@ public class DemandeVisaService {
 		return demandeVisaRepository.findAll();
 	}
 
+	@Transactional
+	public void enregistrerPhotoDemande(Long idDemande, String base64Image) {
 
+		DemandeVisa demande = demandeVisaRepository.findById(idDemande)
+				.orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+
+		if (base64Image == null || base64Image.isBlank()) {
+			throw new IllegalArgumentException("Image vide");
+		}
+
+		try {
+
+			// enlever data:image/png;base64,
+			String imageData = base64Image.split(",")[1];
+
+			byte[] decodedBytes = java.util.Base64
+					.getDecoder()
+					.decode(imageData);
+
+			Path demandeDir = getDemandeUploadDir(idDemande);
+
+			Files.createDirectories(demandeDir);
+
+			String fileName = "photo-" + idDemande + ".png";
+
+			Path target = demandeDir.resolve(fileName);
+
+			// écrase automatiquement l'ancienne photo
+			Files.write(target, decodedBytes);
+
+			/*
+			* Vérifier le dernier statut
+			*/
+			List<StatutDemande> statuts = statutDemandeRepository
+					.findByDemandeVisaIdOrderByDateStatutDesc(idDemande);
+
+			boolean dejaPhotoTerminee = false;
+
+			if (!statuts.isEmpty()) {
+
+				StatutDemande dernierStatut = statuts.get(0);
+
+				if (dernierStatut.getTypeStatutDemande() != null
+						&& dernierStatut.getTypeStatutDemande().getRang() == 2) {
+
+					dejaPhotoTerminee = true;
+				}
+			}
+
+			/*
+			* Ajouter le statut seulement si absent
+			*/
+			if (!dejaPhotoTerminee) {
+
+				TypeStatutDemande typeStatut = typeStatutDemandeRepository
+						.findByRang(2)
+						.orElseThrow(() ->
+								new IllegalStateException("Statut rang 2 introuvable"));
+
+				StatutDemande statutDemande = new StatutDemande();
+
+				statutDemande.setDemandeVisa(demande);
+				statutDemande.setTypeStatutDemande(typeStatut);
+				statutDemande.setDateStatut(java.time.LocalDate.now());
+
+				statutDemandeRepository.save(statutDemande);
+			}
+
+		} catch (IOException e) {
+			throw new IllegalStateException("Erreur sauvegarde photo", e);
+		}
+	}
 }
