@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.visa.model.DemandeVisa;
 import com.example.visa.model.Dossier;
 import com.example.visa.model.StatutDemande;
@@ -346,6 +348,36 @@ public class FrontController {
     @GetMapping("/visa-demande")
     public String formdemande() {
         return "visa-demande";
+    }
+
+    @GetMapping("/demande/{id}/photo")
+    public String openCamera(@PathVariable Long id, Model model) {
+        model.addAttribute("id", id);
+        return "photo"; // photo.jsp
+    }
+
+    @PostMapping("/demande/{id}/photo")
+    @ResponseBody
+    public String savePhoto(@PathVariable Long id, @RequestBody Map<String, String> body) {
+
+        String base64Image = body.get("image");
+
+        // enlever prefix data:image/png;base64,
+        String imageData = base64Image.split(",")[1];
+
+        byte[] decodedBytes = java.util.Base64.getDecoder().decode(imageData);
+
+        try {
+            String fileName = "photo_" + id + ".png";
+            java.nio.file.Path path = java.nio.file.Paths.get("uploads/" + fileName);
+
+            java.nio.file.Files.createDirectories(path.getParent());
+            java.nio.file.Files.write(path, decodedBytes);
+
+            return "OK";
+        } catch (Exception e) {
+            return "ERROR";
+        }
     }
 
 }
