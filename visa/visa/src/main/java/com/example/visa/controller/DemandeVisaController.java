@@ -433,20 +433,20 @@ public class DemandeVisaController {
         java.time.format.DateTimeFormatter dateFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
         
         try {
+            Set<Long> etatCivilIds = new java.util.HashSet<>();
+            
             // Try numeric reference first
             try {
                 Long reference_long = Long.valueOf(reference);
                 DemandeVisa demande_id = demandeVisaRepository.findById(reference_long).orElse(null);
-                if (demande_id != null && !seenIds.contains(demande_id.getId())) {
-                    seenIds.add(demande_id.getId());
-                    data.add(buildResponseDto(demande_id, dateFormatter));
+                if (demande_id != null && demande_id.getPasseport() != null && demande_id.getPasseport().getEtatCivil() != null) {
+                    etatCivilIds.add(demande_id.getPasseport().getEtatCivil().getId());
                 }
                 List<DemandeVisa> demande_passeport_id = demandeVisaRepository.findByPasseport_Id(reference_long);
                 if (demande_passeport_id != null) {
                     for (DemandeVisa demande : demande_passeport_id) {
-                        if (!seenIds.contains(demande.getId())) {
-                            seenIds.add(demande.getId());
-                            data.add(buildResponseDto(demande, dateFormatter));
+                        if (demande.getPasseport() != null && demande.getPasseport().getEtatCivil() != null) {
+                            etatCivilIds.add(demande.getPasseport().getEtatCivil().getId());
                         }
                     }
                 }
@@ -454,24 +454,25 @@ public class DemandeVisaController {
                 // Not a numeric reference, continue with text search
             }
             
-            // Search by passport number
-            List<DemandeVisa> demandes_passeport_ref = demandeVisaRepository.findByPasseport_NumPasseportContaining(reference);
-            if (demandes_passeport_ref != null && demandes_passeport_ref.size() > 0) {
+            // Search by exact passport number
+            List<DemandeVisa> demandes_passeport_ref = demandeVisaRepository.findByPasseport_NumPasseport(reference);
+            if (demandes_passeport_ref != null) {
                 for (DemandeVisa demande : demandes_passeport_ref) {
-                    if (!seenIds.contains(demande.getId())) {
-                        seenIds.add(demande.getId());
-                        data.add(buildResponseDto(demande, dateFormatter));
+                    if (demande.getPasseport() != null && demande.getPasseport().getEtatCivil() != null) {
+                        etatCivilIds.add(demande.getPasseport().getEtatCivil().getId());
                     }
                 }
             }
             
-            // Add all remaining demandes (those that don't match the search criteria)
-            List<DemandeVisa> allDemandes = demandeVisaRepository.findAll();
-            if (allDemandes != null) {
-                for (DemandeVisa demande : allDemandes) {
-                    if (!seenIds.contains(demande.getId())) {
-                        seenIds.add(demande.getId());
-                        data.add(buildResponseDto(demande, dateFormatter));
+            // Now retrieve all demandes for these etatCivilIds, sorted chronologically
+            for (Long etatCivilId : etatCivilIds) {
+                List<DemandeVisa> allDemandesForDemandeur = demandeVisaRepository.findByPasseport_EtatCivil_IdOrderByDateDemandeAsc(etatCivilId);
+                if (allDemandesForDemandeur != null) {
+                    for (DemandeVisa demande : allDemandesForDemandeur) {
+                        if (!seenIds.contains(demande.getId())) {
+                            seenIds.add(demande.getId());
+                            data.add(buildResponseDto(demande, dateFormatter));
+                        }
                     }
                 }
             }
