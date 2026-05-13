@@ -190,7 +190,7 @@ public class FrontController {
                 demandeVisaRepository.save(demande);
                 
                 // Changer le statut de la demande en "Signature créée" (rang 4)
-                demandeVisaService.changerStatutDemande(idDemande, 4);
+                demandeVisaService.changerStatutDemande(idDemande, 3);
             }
 
             return ResponseEntity.ok().build();
@@ -414,26 +414,7 @@ public class FrontController {
                 id,
                 body.get("image")
         );
-
-        // enlever prefix data:image/png;base64,
-        String imageData = base64Image.split(",")[1];
-
-        byte[] decodedBytes = java.util.Base64.getDecoder().decode(imageData);
-
-        try {
-            String fileName = "photo_" + id + ".png";
-            java.nio.file.Path path = java.nio.file.Paths.get("uploads/" + fileName);
-
-            java.nio.file.Files.createDirectories(path.getParent());
-            java.nio.file.Files.write(path, decodedBytes);
-
-            // Changer le statut de la demande en "Signature créée" (rang 3)
-            demandeVisaService.changerStatutDemande(id, 3);
-
-            return "OK";
-        } catch (Exception e) {
-            return "ERROR";
-        }
+        return "OK";
     }
 
     @GetMapping("/demande/{id}/photo/view")
