@@ -702,14 +702,16 @@ public class DemandeVisaService {
 		boolean dossierComplet = dossiers.stream()
 				.filter(Dossier::isEstCoche)
 				.allMatch(dossier -> dossier.getPathFichier() != null && !dossier.getPathFichier().isBlank());
-		if (!dossierComplet) {
-			throw new IllegalStateException("Dossier incomplet");
-		}
+		// if (!dossierComplet) {
+		// 	throw new IllegalStateException("Dossier incomplet");
+		// }
+
+		// scan autorisé même si incompletp
 
 		demande.setEstVerrouille(true);
 		DemandeVisa savedDemande = demandeVisaRepository.save(demande);
-		TypeStatutDemande statut = typeStatutDemandeRepository.findByRang(2)
-				.orElseThrow(() -> new IllegalStateException("Statut rang 2 introuvable"));
+		TypeStatutDemande statut = typeStatutDemandeRepository.findByRang(5)
+				.orElseThrow(() -> new IllegalStateException("Statut rang 5 (scanne) introuvable"));
 		StatutDemande statutDemande = new StatutDemande();
 		statutDemande.setDemandeVisa(savedDemande);
 		statutDemande.setTypeStatutDemande(statut);
@@ -825,4 +827,52 @@ public class DemandeVisaService {
 			throw new IllegalStateException("Erreur sauvegarde photo", e);
 		}
 	}
+
+	@Transactional
+	public void mettreAJourStatutMedia(Long idDemande) {
+
+		DemandeVisa demande = demandeVisaRepository.findById(idDemande)
+				.orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+
+		boolean hasPhoto = Files.exists(Paths.get("uploads/demande-" + idDemande + "/photo-" + idDemande + ".png"));
+		boolean hasSignature = demande.getCheminSignature() != null && !demande.getCheminSignature().isBlank();
+
+		int rangStatut;
+
+		if (hasPhoto && hasSignature) {
+			rangStatut = 4; // Signature et photo terminee
+		} else if (hasSignature) {
+			rangStatut = 3; // Signature terminee
+		} else if (hasPhoto) {
+			rangStatut = 2; // Photo terminee
+		} else {
+			return;
+		}
+
+		TypeStatutDemande typeStatut = typeStatutDemandeRepository.findByRang(rangStatut)
+				.orElseThrow(() -> new IllegalStateException("Statut introuvable"));
+
+		StatutDemande statut = new StatutDemande();
+		statut.setDemandeVisa(demande);
+		statut.setTypeStatutDemande(typeStatut);
+		statut.setDateStatut(java.time.LocalDate.now());
+
+		statutDemandeRepository.save(statut);
+	}
+
+	public void verifierAutorisationScan(Long idDemande) {
+
+        DemandeVisa demande = demandeVisaRepository.findById(idDemande)
+                .orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+
+        StatutDemande dernierStatut = statutDemandeRepository
+                .findTopByDemandeVisaIdOrderByIdDesc(idDemande)
+                .orElseThrow(() -> new IllegalStateException("Aucun statut trouvé"));
+
+        boolean autoriseScan = dernierStatut.getTypeStatutDemande().getRang() >= 4;
+
+        if (!autoriseScan) {
+            throw new IllegalStateException("Scan interdit : photo et signature non terminées");
+        }
+    }
 }

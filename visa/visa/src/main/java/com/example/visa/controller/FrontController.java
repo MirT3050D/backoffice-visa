@@ -141,6 +141,7 @@ public class FrontController {
 
     @GetMapping("/demande/{id}/scan")
     public String scan(@PathVariable Long id, Model model) {
+        demandeVisaService.verifierAutorisationScan(id);
         DemandeVisa demande = demandeVisaRepository.findById(id).orElse(null);
         if (demande == null) {
             return "redirect:/list";
@@ -190,7 +191,9 @@ public class FrontController {
                 demandeVisaRepository.save(demande);
                 
                 // Changer le statut de la demande en "Signature créée" (rang 4)
-                demandeVisaService.changerStatutDemande(idDemande, 3);
+                // demandeVisaService.changerStatutDemande(idDemande, 3);
+                // ✅ IMPORTANT : mise à jour statut global
+                demandeVisaService.mettreAJourStatutMedia(idDemande);
             }
 
             return ResponseEntity.ok().build();
