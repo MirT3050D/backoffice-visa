@@ -708,6 +708,15 @@ public class DemandeVisaService {
 
 		// scan autorisé même si incompletp
 
+		Path photoPath = Paths.get(
+        "uploads",
+        "demande-" + idDemande,
+        "photo-" + idDemande + ".png"
+		);
+
+		if (Files.exists(photoPath)) {
+			demande.setCheminPhoto(photoPath.toString());
+		}
 		demande.setEstVerrouille(true);
 		DemandeVisa savedDemande = demandeVisaRepository.save(demande);
 		TypeStatutDemande statut = typeStatutDemandeRepository.findByRang(5)

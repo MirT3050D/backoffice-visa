@@ -80,43 +80,117 @@ public class FrontController {
 
     @GetMapping("/list")
     public String list(Model model) {
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        DateTimeFormatter dateFormatter =
+                DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
         List<DemandeVisa> demandes = demandeVisaRepository.findAll()
                 .stream()
-                .sorted(Comparator.comparing(DemandeVisa::getId, Comparator.nullsLast(Comparator.reverseOrder())))
+                .sorted(
+                        Comparator.comparing(
+                                DemandeVisa::getId,
+                                Comparator.nullsLast(
+                                        Comparator.reverseOrder()
+                                )
+                        )
+                )
                 .toList();
+
         Map<Long, String> statutLabels = new HashMap<>();
-        Map<Long, List<Map<String, String>>> statutHistory = new HashMap<>();
+
+        Map<Long, List<Map<String, String>>> statutHistory =
+                new HashMap<>();
+
+        // 🔥 AJOUT
+        Map<Long, Boolean> scanTermineMap =
+                new HashMap<>();
+
         for (DemandeVisa demande : demandes) {
-            String label = statutDemandeRepository
-                    .findLatestByDemandeVisaId(demande.getId(), PageRequest.of(0, 1))
-                    .stream()
-                    .findFirst()
-                    .map(StatutDemande::getTypeStatutDemande)
-                    .map(type -> type.getLabel())
-                    .orElse("Creer");
+
+            // dernier statut
+            StatutDemande dernierStatut =
+                    statutDemandeRepository
+                            .findLatestByDemandeVisaId(
+                                    demande.getId(),
+                                    PageRequest.of(0, 1)
+                            )
+                            .stream()
+                            .findFirst()
+                            .orElse(null);
+
+            // label statut
+            String label = dernierStatut != null
+                    ? dernierStatut
+                        .getTypeStatutDemande()
+                        .getLabel()
+                    : "Creer";
+
             statutLabels.put(demande.getId(), label);
-            List<Map<String, String>> historyItems = statutDemandeRepository
-                .findByDemandeVisaIdOrderByDateStatutDesc(demande.getId())
-                .stream()
-                .map(statut -> {
-                Map<String, String> item = new HashMap<>();
-                String dateValue = statut.getDateStatut() == null
-                    ? ""
-                    : statut.getDateStatut().format(dateFormatter);
-                item.put("label", statut.getTypeStatutDemande().getLabel());
-                item.put("date", dateValue);
-                return item;
-                })
-                .collect(Collectors.toList());
+
+            // historique
+            List<Map<String, String>> historyItems =
+                    statutDemandeRepository
+                            .findByDemandeVisaIdOrderByDateStatutDesc(
+                                    demande.getId()
+                            )
+                            .stream()
+                            .map(statut -> {
+
+                                Map<String, String> item =
+                                        new HashMap<>();
+
+                                String dateValue =
+                                        statut.getDateStatut() == null
+                                                ? ""
+                                                : statut.getDateStatut()
+                                                        .format(dateFormatter);
+
+                                item.put(
+                                        "label",
+                                        statut.getTypeStatutDemande()
+                                                .getLabel()
+                                );
+
+                                item.put("date", dateValue);
+
+                                return item;
+
+                            })
+                            .collect(Collectors.toList());
+
             statutHistory.put(demande.getId(), historyItems);
+
+            // 🔥 verifier scan terminé
+            boolean scanTermine = false;
+
+            if (dernierStatut != null) {
+
+                scanTermine =
+                        dernierStatut
+                                .getTypeStatutDemande()
+                                .getRang() >= 5;
+            }
+
+            scanTermineMap.put(
+                    demande.getId(),
+                    scanTermine
+            );
         }
 
         model.addAttribute("demandes", demandes);
+
         model.addAttribute("statutLabels", statutLabels);
+
         model.addAttribute("statutHistory", statutHistory);
+
+        // 🔥 AJOUT
+        model.addAttribute(
+                "scanTermineMap",
+                scanTermineMap
+        );
+
         return "list";
-    }
+}
 
     @GetMapping("/list/{id}")
     public String detail(@PathVariable Long id, Model model) {
