@@ -62,6 +62,7 @@ public class DemandeVisaController {
         model.addAttribute("typeDemandeId", typeDemandeId);
         model.addAttribute("nationalites", demandeVisaService.getAllNationalites());
         model.addAttribute("situationsFamiliales", demandeVisaService.getAllSituationsFamiliales());
+        model.addAttribute("paysList", demandeVisaService.getAllPays());
         return "passport-form";
     }
 
@@ -138,6 +139,7 @@ public class DemandeVisaController {
         model.addAttribute("champsSpecifiques", demandeVisaService.getChampsSpecifiques(typeVisaId));
         model.addAttribute("nationalites", demandeVisaService.getAllNationalites());
         model.addAttribute("situationsFamiliales", demandeVisaService.getAllSituationsFamiliales());
+        model.addAttribute("paysList", demandeVisaService.getAllPays());
         return "visa-form-a-remplir";
     }
 
@@ -155,6 +157,7 @@ public class DemandeVisaController {
         model.addAttribute("typeDemandeId", typeDemandeId);
         model.addAttribute("typeVisaId", typeVisaId);
         model.addAttribute("visaId", visaId);
+        model.addAttribute("paysList", demandeVisaService.getAllPays());
         return "nouveau-passeport";
     }
 
@@ -177,6 +180,7 @@ public class DemandeVisaController {
     @GetMapping("/creer")
     public String creerDemandeVisa(Model model) {
         model.addAttribute("form", new CreerDemandeVisaForm());
+        model.addAttribute("paysList", demandeVisaService.getAllPays());
         return "visa-form-a-remplir";
     }
 
@@ -239,9 +243,11 @@ public class DemandeVisaController {
             form.setNumeroPasseport(passeportForm.getNumero_passport());
             form.setDateExpirationPasseport(passeportForm.getDate_expiration());
             form.setDateDelivrancePasseport(passeportForm.getDate_delivrance());
+            form.setPaysId(passeportForm.getPaysId());
             form.setVisaTranNumPasseport(passeportForm.getVisaTranNumPasseport());
             form.setVisaTranDateDelivrance(passeportForm.getVisaTranDateDelivrance());
             form.setVisaTranDateExpiration(passeportForm.getVisaTranDateExpiration());
+            form.setVisaTranPaysId(passeportForm.getVisaTranPaysId());
         }
 
         try {
@@ -283,9 +289,11 @@ public class DemandeVisaController {
             form.setNumeroPasseport(passeportForm.getNumero_passport());
             form.setDateExpirationPasseport(passeportForm.getDate_expiration());
             form.setDateDelivrancePasseport(passeportForm.getDate_delivrance());
+            form.setPaysId(passeportForm.getPaysId());
             form.setVisaTranNumPasseport(passeportForm.getVisaTranNumPasseport());
             form.setVisaTranDateDelivrance(passeportForm.getVisaTranDateDelivrance());
             form.setVisaTranDateExpiration(passeportForm.getVisaTranDateExpiration());
+            form.setVisaTranPaysId(passeportForm.getVisaTranPaysId());
         }
 
         if (transfertData != null) {
@@ -322,13 +330,15 @@ public class DemandeVisaController {
             @RequestParam("nouveauNumeroPasseport") String nouveauNumeroPasseport,
             @RequestParam("nouveauDateDelivrance") java.time.LocalDate nouveauDateDelivrance,
             @RequestParam("nouveauDateExpiration") java.time.LocalDate nouveauDateExpiration,
+            @RequestParam(value = "nouveauPaysId", required = false) Long nouveauPaysId,
             RedirectAttributes redirectAttributes) {
         try {
             Passeport nouveauPasseport = demandeVisaService.creerTransfertAvecDonnees(
                     visaId,
                     nouveauNumeroPasseport,
                     nouveauDateDelivrance,
-                    nouveauDateExpiration);
+                    nouveauDateExpiration,
+                    nouveauPaysId);
             redirectAttributes.addFlashAttribute("successMessage", "Transfert cree avec succes.");
             return "redirect:/demande-visa/transfert-result?visa_id=" + visaId
                     + "&passeport_id=" + nouveauPasseport.getId();

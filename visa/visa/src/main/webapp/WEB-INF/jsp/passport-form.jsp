@@ -203,9 +203,20 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="date_expiration">Date d'Expiration<span style="color: red;">*</span></label>
-                    <form:input path="date_expiration" id="date_expiration" type="date" required="true" />
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="date_expiration">Date d'Expiration<span style="color: red;">*</span></label>
+                        <form:input path="date_expiration" id="date_expiration" type="date" required="true" />
+                    </div>
+                    <div class="form-group">
+                        <label for="paysId">Pays de délivrance<span style="color: red;">*</span></label>
+                        <form:select path="paysId" id="paysId" required="true">
+                            <option value="">-- Sélectionner un pays --</option>
+                            <c:forEach var="pays" items="${paysList}">
+                                <option value="${pays.id}">${pays.label}</option>
+                            </c:forEach>
+                        </form:select>
+                    </div>
                 </div>
             </div>
 
@@ -224,9 +235,20 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="visaTranDateExpiration">Date d'Expiration (Visa)<span style="color: red;">*</span></label>
-                    <form:input path="visaTranDateExpiration" id="visaTranDateExpiration" type="date" required="true" />
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="visaTranDateExpiration">Date d'Expiration (Visa)<span style="color: red;">*</span></label>
+                        <form:input path="visaTranDateExpiration" id="visaTranDateExpiration" type="date" required="true" />
+                    </div>
+                    <div class="form-group">
+                        <label for="visaTranPaysId">Pays de délivrance (Visa)<span style="color: red;">*</span></label>
+                        <form:select path="visaTranPaysId" id="visaTranPaysId" required="true">
+                            <option value="">-- Sélectionner un pays --</option>
+                            <c:forEach var="pays" items="${paysList}">
+                                <option value="${pays.id}">${pays.label}</option>
+                            </c:forEach>
+                        </form:select>
+                    </div>
                 </div>
             </div>
 

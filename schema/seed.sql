@@ -13,7 +13,9 @@ INSERT INTO type_demande_visa (label) VALUES
 -- type_statut_demande (id, label, ordre_statut)
 INSERT INTO type_statut_demande (label, rang) VALUES
 ('Creer', 1),
-('Scanne', 2),
+('Photo terminee', 2),
+('Scanne', 3),
+('Signature creee', 4),
 ('Approuve', 5);
 
 -- type_statut_visa

@@ -405,3 +405,59 @@ Le statut de la demande passe alors de `Creer` à **`Scanne`**.
 - [ ] Frontoffice : layout mobile-first (cartes empilees, texte lisible, boutons larges)
   - [ ] Utiliser une grille 1 colonne sur mobile
   - [ ] Limiter la largeur et augmenter la taille des zones tappables
+
+---
+
+# Sprint 6 : Export PDF (Aperçu Pièces Jointes & Lettre Réception)
+
+## Contexte
+Après avoir géré la saisie, les pièces jointes (scan terminé) et la prise de photo d'identité, l'application doit permettre d'éditer ou de visualiser des documents officiels au format PDF à différentes étapes du processus :
+
+1. **Aperçu des pièces jointes** : Un aperçu fusionné de tous les justificatifs fournis (au format PDF, selon l'ordre d'insertion, non téléchargeable), accessible en permanence depuis la page fiche de la demande via un bouton en bas (toujours disponible).
+2. **Lettre d'accusé de réception** : Une lettre formelle confirmant la réception du dossier (après statut `SCANNE`), contenant toutes les informations du demandeur, un QR Code et la photo d'identité.
+
+* **Développeur 1 (Full-Stack) : Module A** — Aperçu sécurisé de toutes les pièces justificatives (PDF fusionné en ordre d'insertion, non téléchargeable).
+* **Développeur 2 (Full-Stack) : Module B** — Lettre d'Accusé de Réception (Lettre "Voaray", après scan terminé, avec QR Code et Photo d'Identité).
+
+---
+
+## Développeur 1 : Module A (Aperçu Sécurisé des Pièces Justificatives)
+**Branche :** `sprint/6/feature/justificatifs-preview-fullstack`
+
+### 1. Configuration Commune
+- [ ] Ajouter les dépendances de génération et de traitement PDF dans le `pom.xml` (ex: `openpdf` ou `itext7` pour le moteur de base, `pdfbox` pour la fusion de fichiers PDF).
+- [ ] Configurer les répertoires et utilitaires d'accès aux fichiers physiques uploadés des justificatifs.
+
+### 2. Fonctionnalité : Service de Fusion & API (Back-end)
+- [ ] Implémenter le service récupérant tous les fichiers physiques/PDF associés aux pièces jointes de la demande (`dossier` où `est_coche = true` et `path_fichier` non nul).
+- [ ] Ordonner ces justificatifs selon leur ordre d'insertion en base de données.
+- [ ] Fusionner l'ensemble des fichiers PDF en un unique flux PDF.
+- [ ] Créer l'endpoint `GET /api/demandes/{id}/pieces-jointes/fusion` (accessible à tout moment pour la demande).
+- [ ] Configurer les en-têtes HTTP de la réponse avec `Content-Disposition: inline; filename="justificatifs.pdf"` pour forcer l'affichage dans le navigateur et non le téléchargement automatique.
+
+### 3. Fonctionnalité : Intégration IHM & Sécurisation (Front-end)
+- [ ] Sur la page fiche de la demande (`detail.jsp` ou page Vue), ajouter le bouton "Aperçu des pièces justificatives" en bas de page.
+- [ ] S'assurer que le bouton est toujours visible et accessible pour la demande (toujours disponible).
+- [ ] Au clic sur le bouton, ouvrir un composant/modal d'affichage (iframe ou visionneuse PDF).
+- [ ] **Empêcher le téléchargement et la copie du document (Non Téléchargeable)** :
+  - [ ] Ajouter les paramètres de désactivation de la barre d'outils native à l'URL de l'iframe : `src="/api/demandes/{id}/pieces-jointes/fusion#toolbar=0&navpanes=0&scrollbar=0"`.
+  - [ ] Ajouter un écouteur JavaScript pour interdire le clic droit (`contextmenu`) sur le conteneur d'aperçu.
+  - [ ] Appliquer des styles CSS (ex: superposition d'une div transparente ou `pointer-events: none` sélectif) pour empêcher le drag-and-drop ou le clic droit direct d'enregistrement.
+
+---
+
+## Développeur 2 : Module B (Lettre d'Accusé de Réception - Full-Stack)
+**Branche :** `sprint/6/feature/lettre-reception-fullstack`
+
+### 1. Fonctionnalité : Lettre d'Accusé de Réception (PDF "Voaray ny dossier")
+- [ ] **Back-end : Moteur PDF & API** :
+  - [ ] Concevoir le template / design de la lettre d'accusé de réception officielle ("Dossier bien reçu après scan terminé").
+  - [ ] Intégrer dynamiquement toutes les données de la personne (État civil, Passeport).
+  - [ ] Générer et intégrer l'image du **QR Code** à l'aide de la dépendance ZXing (pointant vers l'URL publique de vérification).
+  - [ ] Récupérer et intégrer la **Photo d'Identité** de la personne directement dans l'en-tête ou le corps du PDF.
+  - [ ] Créer l'endpoint `GET /api/demandes/{id}/lettre-reception`.
+  - [ ] Ajouter une validation : lever une exception si le statut de la demande n'est pas au moins `SCANNE` (Scan terminé).
+- [ ] **Front-end : Intégration IHM** :
+  - [ ] Sur la page de détails de la demande (`detail.jsp` ou page Vue), ajouter le bouton "Lettre d'accusé de réception (PDF)" en bas de page.
+  - [ ] Rendre le bouton visible et actif **uniquement** si le statut de la demande est supérieur ou égal à `SCANNE` (Scan terminé).
+  - [ ] Associer l'événement clic à l'ouverture de l'URL `GET /api/demandes/{id}/lettre-reception` dans un nouvel onglet de navigateur afin de permettre un aperçu rapide et l'impression physique facile pour le demandeur.

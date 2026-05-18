@@ -28,6 +28,12 @@ public class DemandeVisa {
     @Column(name = "est_verrouille", nullable = false)
     private boolean estVerrouille;
 
+    @Column(name = "chemin_photo", length = 255)
+    private String cheminPhoto;
+
+    @Column(name = "chemin_signature", length = 255)
+    private String cheminSignature;
+
     public Long getId() {
         return id;
     }
@@ -70,5 +76,21 @@ public class DemandeVisa {
 
     public void setEstVerrouille(boolean estVerrouille) {
         this.estVerrouille = estVerrouille;
+    }
+
+    public String getCheminPhoto() {
+        return cheminPhoto;
+    }
+
+    public void setCheminPhoto(String cheminPhoto) {
+        this.cheminPhoto = cheminPhoto;
+    }
+
+    public String getCheminSignature() {
+        return cheminSignature;
+    }
+
+    public void setCheminSignature(String cheminSignature) {
+        this.cheminSignature = cheminSignature;
     }
 }

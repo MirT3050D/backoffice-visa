@@ -1,13 +1,21 @@
 package com.example.visa.controller;
 
-import com.example.visa.dto.DemandeVisaEditForm;
-import com.example.visa.service.DemandeVisaService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.Part;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,28 +26,27 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.example.visa.dto.DemandeVisaEditForm;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.example.visa.model.DemandeVisa;
 import com.example.visa.model.Dossier;
 import com.example.visa.model.StatutDemande;
-import com.example.visa.repository.TypeDemandeVisaRepository;
+import com.example.visa.model.TypeDemandeVisa;
 import com.example.visa.repository.DemandeVisaRepository;
 import com.example.visa.repository.DossierRepository;
 import com.example.visa.repository.StatutDemandeRepository;
-import com.example.visa.model.TypeDemandeVisa;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.example.visa.repository.TypeDemandeVisaRepository;
+import com.example.visa.service.DemandeVisaService;
 
-import java.util.HashMap;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Map;
-import java.util.List;
-import java.util.Comparator;
-import java.util.Set;
-import java.time.format.DateTimeFormatter;
-import java.util.stream.Collectors;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
+
+import java.io.IOException;
 
 @Controller
 public class FrontController {
@@ -150,6 +157,47 @@ public class FrontController {
         model.addAttribute("dossiers", dossiersRequis);
         model.addAttribute("isComplet", isComplet);
         return "scan-demande";
+    }
+
+    @GetMapping("/demande/{id}/signature")
+    public String signaturePage(@PathVariable Long id, Model model) {
+        DemandeVisa demande = demandeVisaRepository.findById(id).orElse(null);
+        if (demande == null) {
+            return "redirect:/list";
+        }
+        model.addAttribute("demande", demande);
+        return "signature-demande";
+    }
+
+    @PostMapping("/demande/{idDemande}/upload-signature")
+    public ResponseEntity<?> uploadSignature(@PathVariable Long idDemande, @RequestParam("signature") MultipartFile signatureFile) {
+        try {
+            DemandeVisa demande = demandeVisaRepository.findById(idDemande).orElse(null);
+            if (demande == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            if (!signatureFile.isEmpty()) {
+                String fileName = "signature_" + idDemande + "_" + java.util.UUID.randomUUID().toString() + ".png";
+                Path uploadPath = Paths.get("uploads/signature");
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+                Path filePath = uploadPath.resolve(fileName);
+                Files.copy(signatureFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                
+                demande.setCheminSignature("uploads/signature/" + fileName);
+                demandeVisaRepository.save(demande);
+                
+                // Changer le statut de la demande en "Signature créée" (rang 4)
+                demandeVisaService.changerStatutDemande(idDemande, 4);
+            }
+
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @PostMapping("/demande/{idDemande}/upload")
@@ -358,9 +406,14 @@ public class FrontController {
 
     @PostMapping("/demande/{id}/photo")
     @ResponseBody
-    public String savePhoto(@PathVariable Long id, @RequestBody Map<String, String> body) {
+    public String savePhoto(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
 
-        String base64Image = body.get("image");
+        demandeVisaService.enregistrerPhotoDemande(
+                id,
+                body.get("image")
+        );
 
         // enlever prefix data:image/png;base64,
         String imageData = base64Image.split(",")[1];
@@ -374,10 +427,59 @@ public class FrontController {
             java.nio.file.Files.createDirectories(path.getParent());
             java.nio.file.Files.write(path, decodedBytes);
 
+            // Changer le statut de la demande en "Signature créée" (rang 3)
+            demandeVisaService.changerStatutDemande(id, 3);
+
             return "OK";
         } catch (Exception e) {
             return "ERROR";
         }
     }
 
+    @GetMapping("/demande/{id}/photo/view")
+    @ResponseBody
+    public ResponseEntity<Resource> afficherPhoto(
+            @PathVariable Long id) throws IOException {
+
+        Path photoPath = Paths.get(
+                "uploads",
+                "demande-" + id,
+                "photo-" + id + ".png"
+        );
+
+        if (!Files.exists(photoPath)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Resource resource = new UrlResource(photoPath.toUri());
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(resource);
+    }
+
+    @GetMapping("/demande/{id}/signature/view")
+    @ResponseBody
+    public ResponseEntity<Resource> afficherSignature(
+            @PathVariable Long id) throws IOException {
+
+        DemandeVisa demande = demandeVisaRepository.findById(id)
+                .orElse(null);
+
+        if (demande == null || demande.getCheminSignature() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Path signaturePath = Paths.get(demande.getCheminSignature());
+
+        if (!Files.exists(signaturePath)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Resource resource = new UrlResource(signaturePath.toUri());
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(resource);
+    }
 }

@@ -52,6 +52,9 @@ public class CreerDemandeVisaForm {
     private LocalDate dateExpirationPasseport;
 
     @NotNull
+    private Long paysId;
+
+    @NotNull
     private Long typeDemandeId;
 
     @NotNull
@@ -67,6 +70,9 @@ public class CreerDemandeVisaForm {
     @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate visaTranDateExpiration;
+
+    @NotNull
+    private Long visaTranPaysId;
 
     private java.util.List<Long> champsCommunsCoches;
 
@@ -102,6 +108,14 @@ public class CreerDemandeVisaForm {
 
     public void setVisaTranDateExpiration(LocalDate visaTranDateExpiration) {
         this.visaTranDateExpiration = visaTranDateExpiration;
+    }
+
+    public Long getVisaTranPaysId() {
+        return visaTranPaysId;
+    }
+
+    public void setVisaTranPaysId(Long visaTranPaysId) {
+        this.visaTranPaysId = visaTranPaysId;
     }
 
     public java.util.List<Long> getChampsSpecifiquesCoches() {
@@ -222,6 +236,14 @@ public class CreerDemandeVisaForm {
 
     public void setDateExpirationPasseport(LocalDate dateExpirationPasseport) {
         this.dateExpirationPasseport = dateExpirationPasseport;
+    }
+
+    public Long getPaysId() {
+        return paysId;
+    }
+
+    public void setPaysId(Long paysId) {
+        this.paysId = paysId;
     }
 
     public Long getTypeDemandeId() {

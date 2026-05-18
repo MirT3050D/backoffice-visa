@@ -124,9 +124,20 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="nouveauDateExpiration">Date d'expiration</label>
-                        <input type="date" id="nouveauDateExpiration" name="nouveauDateExpiration" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nouveauDateExpiration">Date d'expiration</label>
+                            <input type="date" id="nouveauDateExpiration" name="nouveauDateExpiration" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="nouveauPaysId">Pays de délivrance</label>
+                            <select id="nouveauPaysId" name="nouveauPaysId" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                <option value="">-- Sélectionner un pays --</option>
+                                <c:forEach var="pays" items="${paysList}">
+                                    <option value="${pays.id}">${pays.label}</option>
+                                </c:forEach>
+                            </select>
+                        </div>
                     </div>
                 </div>
 

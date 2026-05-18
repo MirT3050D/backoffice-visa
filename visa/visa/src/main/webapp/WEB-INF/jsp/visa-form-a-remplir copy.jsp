@@ -1,4 +1,4 @@
-﻿<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="fr">
@@ -120,6 +120,15 @@
                         <label for="dateExpiration">Date d'Expiration *</label>
                         <input type="date" id="dateExpiration" name="dateExpirationPasseport" required>
                     </div>
+                    <div class="form-group">
+                        <label for="paysId">Pays de délivrance *</label>
+                        <select id="paysId" name="paysId" required>
+                            <option value="">Sélectionner</option>
+                            <c:forEach var="pays" items="${paysList}">
+                                <option value="${pays.id}">${pays.label}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -145,6 +154,15 @@
                     <div class="form-group">
                         <label for="visaTranDateExpiration">Date d'Expiration *</label>
                         <input type="date" id="visaTranDateExpiration" name="visaTranDateExpiration" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="visaTranPaysId">Pays de délivrance (Visa) *</label>
+                        <select id="visaTranPaysId" name="visaTranPaysId" required>
+                            <option value="">Sélectionner</option>
+                            <c:forEach var="pays" items="${paysList}">
+                                <option value="${pays.id}">${pays.label}</option>
+                            </c:forEach>
+                        </select>
                     </div>
                 </div>
             </div>

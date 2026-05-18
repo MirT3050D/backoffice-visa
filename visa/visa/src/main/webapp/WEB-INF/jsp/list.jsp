@@ -327,6 +327,11 @@
                                                             <path d="M4 4h16v4H4V4zm2 6h12v8H6v-8zm2 2v4h8v-4H8zm9-6h3v2h-3V6z"/>
                                                         </svg>
                                                     </a>
+                                                    <a class="row-action row-action-edit" href="${pageContext.request.contextPath}/demande/${demande.id}/signature" title="Signature">
+                                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                            <path d="M12.44 3.73l-8.2 8.2v2.83h2.83l8.2-8.2-2.83-2.83zm2.12-2.12a.996.996 0 0 1 1.41 0l1.41 1.41c.39.39.39 1.02 0 1.41l-1.42 1.42-2.83-2.83 1.43-1.41zm-11.56 18.39h16v2h-16v-2z"/>
+                                                        </svg>
+                                                    </a>
                                                     <a class="row-action row-action-edit" href="${pageContext.request.contextPath}/list/${demande.id}/edit" title="Editer">
                                                         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                                                             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm2.92 2.33H5v-.92l9.06-9.06.92.92L5.92 19.58zM20.71 7.04a1.003 1.003 0 000-1.42l-2.34-2.34a1.003 1.003 0 00-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/>

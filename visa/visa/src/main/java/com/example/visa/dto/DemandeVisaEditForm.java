@@ -34,6 +34,8 @@ public class DemandeVisaEditForm {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate dateExpirationPasseport;
 
+    private Long paysId;
+
     private String visaTranNumPasseport;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -41,6 +43,8 @@ public class DemandeVisaEditForm {
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate visaTranDateExpiration;
+
+    private Long visaTranPaysId;
 
     private List<Long> champsCommunsCoches;
     private List<Long> champsSpecifiquesCoches;
@@ -173,6 +177,14 @@ public class DemandeVisaEditForm {
         this.dateExpirationPasseport = dateExpirationPasseport;
     }
 
+    public Long getPaysId() {
+        return paysId;
+    }
+
+    public void setPaysId(Long paysId) {
+        this.paysId = paysId;
+    }
+
     public String getVisaTranNumPasseport() {
         return visaTranNumPasseport;
     }
@@ -195,6 +207,14 @@ public class DemandeVisaEditForm {
 
     public void setVisaTranDateExpiration(LocalDate visaTranDateExpiration) {
         this.visaTranDateExpiration = visaTranDateExpiration;
+    }
+
+    public Long getVisaTranPaysId() {
+        return visaTranPaysId;
+    }
+
+    public void setVisaTranPaysId(Long visaTranPaysId) {
+        this.visaTranPaysId = visaTranPaysId;
     }
 
     public List<Long> getChampsCommunsCoches() {
