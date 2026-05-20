@@ -406,6 +406,8 @@ Le statut de la demande passe alors de `Creer` à **`Scanne`**.
   - [ ] Utiliser une grille 1 colonne sur mobile
   - [ ] Limiter la largeur et augmenter la taille des zones tappables
 
+- [ ] Limiter la largeur et augmenter la taille des zones tappables
+
 ---
 
 # Sprint 6 : Export PDF (Aperçu Pièces Jointes & Lettre Réception)

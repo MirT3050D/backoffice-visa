@@ -80,43 +80,117 @@ public class FrontController {
 
     @GetMapping("/list")
     public String list(Model model) {
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        DateTimeFormatter dateFormatter =
+                DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
         List<DemandeVisa> demandes = demandeVisaRepository.findAll()
                 .stream()
-                .sorted(Comparator.comparing(DemandeVisa::getId, Comparator.nullsLast(Comparator.reverseOrder())))
+                .sorted(
+                        Comparator.comparing(
+                                DemandeVisa::getId,
+                                Comparator.nullsLast(
+                                        Comparator.reverseOrder()
+                                )
+                        )
+                )
                 .toList();
+
         Map<Long, String> statutLabels = new HashMap<>();
-        Map<Long, List<Map<String, String>>> statutHistory = new HashMap<>();
+
+        Map<Long, List<Map<String, String>>> statutHistory =
+                new HashMap<>();
+
+        // 🔥 AJOUT
+        Map<Long, Boolean> scanTermineMap =
+                new HashMap<>();
+
         for (DemandeVisa demande : demandes) {
-            String label = statutDemandeRepository
-                    .findLatestByDemandeVisaId(demande.getId(), PageRequest.of(0, 1))
-                    .stream()
-                    .findFirst()
-                    .map(StatutDemande::getTypeStatutDemande)
-                    .map(type -> type.getLabel())
-                    .orElse("Creer");
+
+            // dernier statut
+            StatutDemande dernierStatut =
+                    statutDemandeRepository
+                            .findLatestByDemandeVisaId(
+                                    demande.getId(),
+                                    PageRequest.of(0, 1)
+                            )
+                            .stream()
+                            .findFirst()
+                            .orElse(null);
+
+            // label statut
+            String label = dernierStatut != null
+                    ? dernierStatut
+                        .getTypeStatutDemande()
+                        .getLabel()
+                    : "Creer";
+
             statutLabels.put(demande.getId(), label);
-            List<Map<String, String>> historyItems = statutDemandeRepository
-                .findByDemandeVisaIdOrderByDateStatutDesc(demande.getId())
-                .stream()
-                .map(statut -> {
-                Map<String, String> item = new HashMap<>();
-                String dateValue = statut.getDateStatut() == null
-                    ? ""
-                    : statut.getDateStatut().format(dateFormatter);
-                item.put("label", statut.getTypeStatutDemande().getLabel());
-                item.put("date", dateValue);
-                return item;
-                })
-                .collect(Collectors.toList());
+
+            // historique
+            List<Map<String, String>> historyItems =
+                    statutDemandeRepository
+                            .findByDemandeVisaIdOrderByDateStatutDesc(
+                                    demande.getId()
+                            )
+                            .stream()
+                            .map(statut -> {
+
+                                Map<String, String> item =
+                                        new HashMap<>();
+
+                                String dateValue =
+                                        statut.getDateStatut() == null
+                                                ? ""
+                                                : statut.getDateStatut()
+                                                        .format(dateFormatter);
+
+                                item.put(
+                                        "label",
+                                        statut.getTypeStatutDemande()
+                                                .getLabel()
+                                );
+
+                                item.put("date", dateValue);
+
+                                return item;
+
+                            })
+                            .collect(Collectors.toList());
+
             statutHistory.put(demande.getId(), historyItems);
+
+            // 🔥 verifier scan terminé
+            boolean scanTermine = false;
+
+            if (dernierStatut != null) {
+
+                scanTermine =
+                        dernierStatut
+                                .getTypeStatutDemande()
+                                .getRang() >= 5;
+            }
+
+            scanTermineMap.put(
+                    demande.getId(),
+                    scanTermine
+            );
         }
 
         model.addAttribute("demandes", demandes);
+
         model.addAttribute("statutLabels", statutLabels);
+
         model.addAttribute("statutHistory", statutHistory);
+
+        // 🔥 AJOUT
+        model.addAttribute(
+                "scanTermineMap",
+                scanTermineMap
+        );
+
         return "list";
-    }
+}
 
     @GetMapping("/list/{id}")
     public String detail(@PathVariable Long id, Model model) {
@@ -141,6 +215,7 @@ public class FrontController {
 
     @GetMapping("/demande/{id}/scan")
     public String scan(@PathVariable Long id, Model model) {
+        demandeVisaService.verifierAutorisationScan(id);
         DemandeVisa demande = demandeVisaRepository.findById(id).orElse(null);
         if (demande == null) {
             return "redirect:/list";
@@ -190,7 +265,9 @@ public class FrontController {
                 demandeVisaRepository.save(demande);
                 
                 // Changer le statut de la demande en "Signature créée" (rang 4)
-                demandeVisaService.changerStatutDemande(idDemande, 4);
+                // demandeVisaService.changerStatutDemande(idDemande, 3);
+                // ✅ IMPORTANT : mise à jour statut global
+                demandeVisaService.mettreAJourStatutMedia(idDemande);
             }
 
             return ResponseEntity.ok().build();
@@ -414,26 +491,7 @@ public class FrontController {
                 id,
                 body.get("image")
         );
-
-        // enlever prefix data:image/png;base64,
-        String imageData = base64Image.split(",")[1];
-
-        byte[] decodedBytes = java.util.Base64.getDecoder().decode(imageData);
-
-        try {
-            String fileName = "photo_" + id + ".png";
-            java.nio.file.Path path = java.nio.file.Paths.get("uploads/" + fileName);
-
-            java.nio.file.Files.createDirectories(path.getParent());
-            java.nio.file.Files.write(path, decodedBytes);
-
-            // Changer le statut de la demande en "Signature créée" (rang 3)
-            demandeVisaService.changerStatutDemande(id, 3);
-
-            return "OK";
-        } catch (Exception e) {
-            return "ERROR";
-        }
+        return "OK";
     }
 
     @GetMapping("/demande/{id}/photo/view")
