@@ -315,6 +315,14 @@
                     Retour a la liste
                 </a>
 
+                <a class="btn btn-primary"
+                   href="${pageContext.request.contextPath}/api/demandes/${demande.id}/pieces-jointes/fusion"
+                   target="_blank"
+                   rel="noopener">
+
+                    Apercu des pieces justificatives
+                </a>
+
                 <div class="row-actions">
 
                     <a class="row-action row-action-edit"

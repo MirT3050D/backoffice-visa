@@ -438,8 +438,8 @@ Après avoir géré la saisie, les pièces jointes (scan terminé) et la prise d
 - [x] Configurer les en-têtes HTTP de la réponse avec `Content-Disposition: inline; filename="justificatifs.pdf"` pour forcer l'affichage dans le navigateur et non le téléchargement automatique.
 
 ### 3. Fonctionnalité : Intégration IHM & Sécurisation (Front-end)
-- [ ] Sur la page fiche de la demande (`detail.jsp` ou page Vue), ajouter le bouton "Aperçu des pièces justificatives" en bas de page.
-- [ ] S'assurer que le bouton est toujours visible et accessible pour la demande (toujours disponible).
+- [x] Sur la page fiche de la demande (`detail.jsp` ou page Vue), ajouter le bouton "Aperçu des pièces justificatives" en bas de page.
+- [x] S'assurer que le bouton est toujours visible et accessible pour la demande (toujours disponible).
 - [ ] Au clic sur le bouton, ouvrir un composant/modal d'affichage (iframe ou visionneuse PDF).
 - [ ] **Empêcher le téléchargement et la copie du document (Non Téléchargeable)** :
   - [ ] Ajouter les paramètres de désactivation de la barre d'outils native à l'URL de l'iframe : `src="/api/demandes/{id}/pieces-jointes/fusion#toolbar=0&navpanes=0&scrollbar=0"`.
