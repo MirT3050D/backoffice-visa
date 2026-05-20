@@ -224,6 +224,13 @@ public class DemandeVisaService {
 		TypeVisa typeVisa = typeVisaRepository.findById(form.getTypeVisaId())
 				.orElseThrow(() -> new IllegalArgumentException("Type visa introuvable"));
 
+		import org.apache.pdfbox.pdmodel.PDDocument;
+		import org.apache.pdfbox.pdmodel.PDPage;
+		import org.apache.pdfbox.pdmodel.PDPageContentStream;
+		import org.apache.pdfbox.pdmodel.common.PDRectangle;
+		import org.apache.pdfbox.pdmodel.font.PDType1Font;
+		import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+		import com.google.zxing.WriterException;
 		EtatCivil etatCivil = new EtatCivil();
 		etatCivil.setNom(form.getNom());
 		etatCivil.setPrenom(form.getPrenom());
@@ -246,6 +253,7 @@ public class DemandeVisaService {
 			passeport.setPays(paysRepository.findById(form.getPaysId()).orElse(null));
 		}
 		Passeport savedPasseport = passeportRepository.save(passeport);
+			private final QrCodeService qrCodeService;
 
 		VisaTransformable visaTransformable = new VisaTransformable();
 		visaTransformable.setDateEntre(null);
@@ -271,6 +279,7 @@ public class DemandeVisaService {
 				: new HashSet<>(form.getChampsCommunsCoches());
 
 		Set<Long> champsSpecifiquesCoches = form.getChampsSpecifiquesCoches() == null
+					QrCodeService qrCodeService
 				? new HashSet<>()
 				: new HashSet<>(form.getChampsSpecifiquesCoches());
 
@@ -292,6 +301,7 @@ public class DemandeVisaService {
 			dossierSpecifique.setChampFournirSpecifique(champSpecifique);
 			dossierSpecifique.setEstCoche(true);
 			dossierRepository.save(dossierSpecifique);
+				this.qrCodeService = qrCodeService;
 		}
 
 		creerStatutInitial(savedDemandeVisa, statutInitialRang);

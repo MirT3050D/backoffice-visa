@@ -384,18 +384,26 @@
 
             <div class="detail-actions">
 
+
                 <a class="btn btn-secondary"
                    href="${pageContext.request.contextPath}/list">
-
                     Retour a la liste
                 </a>
 
                 <button class="btn btn-primary"
                         type="button"
                         data-action="open-pdf">
-
                     Apercu des pieces justificatives
                 </button>
+
+                <c:if test="${demande.estVerrouille}">
+                    <button class="btn btn-success"
+                            type="button"
+                            id="btn-lettre-reception"
+                            onclick="window.open('${pageContext.request.contextPath}/api/demandes/${demande.id}/lettre-reception', '_blank')">
+                        Lettre d'accusé de réception (PDF)
+                    </button>
+                </c:if>
 
                 <div class="row-actions">
 
