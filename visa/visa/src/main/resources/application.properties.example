@@ -22,3 +22,6 @@ spring.http.encoding.enabled=true
 
 server.address=0.0.0.0
 server.port=8080
+
+# Repertoire des fichiers uploades (PDF justificatifs)
+app.uploads.dir=uploads
