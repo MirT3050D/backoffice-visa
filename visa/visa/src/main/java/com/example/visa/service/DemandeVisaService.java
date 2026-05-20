@@ -733,15 +733,20 @@ public class DemandeVisaService {
 		}
 
 		if (fichiers.isEmpty()) {
+
 			throw new IllegalStateException(
 				"Aucune piece jointe disponible"
 			);
 		}
 
 		try (
-			PDDocument document = new PDDocument();
+
+			PDDocument finalDocument =
+				new PDDocument();
+
 			ByteArrayOutputStream output =
 				new ByteArrayOutputStream()
+
 		) {
 
 			for (Path fichier : fichiers) {
@@ -760,17 +765,21 @@ public class DemandeVisaService {
 						PDDocument pdf =
 							PDDocument.load(
 								fichier.toFile()
-							);
+							)
 					) {
 
-						for (PDPage page : pdf.getPages()) {
-							document.importPage(page);
-						}
+						PDFMergerUtility merger =
+							new PDFMergerUtility();
+
+						merger.appendDocument(
+							finalDocument,
+							pdf
+						);
 					}
 				}
 
 				// =========================
-				// Images
+				// IMAGES
 				// =========================
 				else if (
 					nom.endsWith(".png")
@@ -781,12 +790,12 @@ public class DemandeVisaService {
 					PDPage page =
 						new PDPage(PDRectangle.A4);
 
-					document.addPage(page);
+					finalDocument.addPage(page);
 
 					PDImageXObject image =
 						PDImageXObject.createFromFile(
 							fichier.toString(),
-							document
+							finalDocument
 						);
 
 					float pageWidth =
@@ -822,7 +831,7 @@ public class DemandeVisaService {
 					try (
 						PDPageContentStream content =
 							new PDPageContentStream(
-								document,
+								finalDocument,
 								page
 							)
 					) {
@@ -836,9 +845,10 @@ public class DemandeVisaService {
 						);
 					}
 				}
+
 			}
 
-			document.save(output);
+			finalDocument.save(output);
 
 			return output.toByteArray();
 
