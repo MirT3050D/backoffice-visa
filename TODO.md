@@ -406,6 +406,8 @@ Le statut de la demande passe alors de `Creer` à **`Scanne`**.
   - [ ] Utiliser une grille 1 colonne sur mobile
   - [ ] Limiter la largeur et augmenter la taille des zones tappables
 
+- [ ] Limiter la largeur et augmenter la taille des zones tappables
+
 ---
 
 # Sprint 6 : Export PDF (Aperçu Pièces Jointes & Lettre Réception)
@@ -425,24 +427,24 @@ Après avoir géré la saisie, les pièces jointes (scan terminé) et la prise d
 **Branche :** `sprint/6/feature/justificatifs-preview-fullstack`
 
 ### 1. Configuration Commune
-- [ ] Ajouter les dépendances de génération et de traitement PDF dans le `pom.xml` (ex: `openpdf` ou `itext7` pour le moteur de base, `pdfbox` pour la fusion de fichiers PDF).
-- [ ] Configurer les répertoires et utilitaires d'accès aux fichiers physiques uploadés des justificatifs.
+- [x] Ajouter les dépendances de génération et de traitement PDF dans le `pom.xml` (ex: `openpdf` ou `itext7` pour le moteur de base, `pdfbox` pour la fusion de fichiers PDF).
+- [x] Configurer les répertoires et utilitaires d'accès aux fichiers physiques uploadés des justificatifs.
 
 ### 2. Fonctionnalité : Service de Fusion & API (Back-end)
-- [ ] Implémenter le service récupérant tous les fichiers physiques/PDF associés aux pièces jointes de la demande (`dossier` où `est_coche = true` et `path_fichier` non nul).
-- [ ] Ordonner ces justificatifs selon leur ordre d'insertion en base de données.
-- [ ] Fusionner l'ensemble des fichiers PDF en un unique flux PDF.
-- [ ] Créer l'endpoint `GET /api/demandes/{id}/pieces-jointes/fusion` (accessible à tout moment pour la demande).
-- [ ] Configurer les en-têtes HTTP de la réponse avec `Content-Disposition: inline; filename="justificatifs.pdf"` pour forcer l'affichage dans le navigateur et non le téléchargement automatique.
+- [x] Implémenter le service récupérant tous les fichiers physiques/PDF associés aux pièces jointes de la demande (`dossier` où `est_coche = true` et `path_fichier` non nul).
+- [x] Ordonner ces justificatifs selon leur ordre d'insertion en base de données.
+- [x] Fusionner l'ensemble des fichiers PDF en un unique flux PDF.
+- [x] Créer l'endpoint `GET /api/demandes/{id}/pieces-jointes/fusion` (accessible à tout moment pour la demande).
+- [x] Configurer les en-têtes HTTP de la réponse avec `Content-Disposition: inline; filename="justificatifs.pdf"` pour forcer l'affichage dans le navigateur et non le téléchargement automatique.
 
 ### 3. Fonctionnalité : Intégration IHM & Sécurisation (Front-end)
-- [ ] Sur la page fiche de la demande (`detail.jsp` ou page Vue), ajouter le bouton "Aperçu des pièces justificatives" en bas de page.
-- [ ] S'assurer que le bouton est toujours visible et accessible pour la demande (toujours disponible).
-- [ ] Au clic sur le bouton, ouvrir un composant/modal d'affichage (iframe ou visionneuse PDF).
-- [ ] **Empêcher le téléchargement et la copie du document (Non Téléchargeable)** :
-  - [ ] Ajouter les paramètres de désactivation de la barre d'outils native à l'URL de l'iframe : `src="/api/demandes/{id}/pieces-jointes/fusion#toolbar=0&navpanes=0&scrollbar=0"`.
-  - [ ] Ajouter un écouteur JavaScript pour interdire le clic droit (`contextmenu`) sur le conteneur d'aperçu.
-  - [ ] Appliquer des styles CSS (ex: superposition d'une div transparente ou `pointer-events: none` sélectif) pour empêcher le drag-and-drop ou le clic droit direct d'enregistrement.
+- [x] Sur la page fiche de la demande (`detail.jsp` ou page Vue), ajouter le bouton "Aperçu des pièces justificatives" en bas de page.
+- [x] S'assurer que le bouton est toujours visible et accessible pour la demande (toujours disponible).
+- [x] Au clic sur le bouton, ouvrir un composant/modal d'affichage (iframe ou visionneuse PDF).
+- [x] **Empêcher le téléchargement et la copie du document (Non Téléchargeable)** :
+  - [x] Ajouter les paramètres de désactivation de la barre d'outils native à l'URL de l'iframe : `src="/api/demandes/{id}/pieces-jointes/fusion#toolbar=0&navpanes=0&scrollbar=0"`.
+  - [x] Ajouter un écouteur JavaScript pour interdire le clic droit (`contextmenu`) sur le conteneur d'aperçu.
+  - [x] Appliquer des styles CSS (ex: superposition d'une div transparente ou `pointer-events: none` sélectif) pour empêcher le drag-and-drop ou le clic droit direct d'enregistrement.
 
 ---
 

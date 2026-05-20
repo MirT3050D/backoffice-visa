@@ -78,6 +78,77 @@
             letter-spacing: 0.5px;
         }
 
+        .pdf-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.65);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 1.5rem;
+        }
+
+        .pdf-modal.is-open {
+            display: flex;
+        }
+
+        .pdf-modal-content {
+            background: #fff;
+            border-radius: 16px;
+            width: min(1100px, 100%);
+            height: min(90vh, 760px);
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .pdf-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.85rem 1.25rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .pdf-modal-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .pdf-modal-close {
+            border: none;
+            background: transparent;
+            font-size: 1.4rem;
+            line-height: 1;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .pdf-modal-body {
+            position: relative;
+            flex: 1;
+            background: #0f172a;
+        }
+
+        .pdf-frame {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            display: block;
+        }
+
+        .pdf-overlay {
+            position: absolute;
+            inset: 0;
+            background: transparent;
+            z-index: 2;
+            pointer-events: none;
+        }
+
         /* RESPONSIVE */
         @media (max-width: 768px) {
             .photo-layout {
@@ -92,6 +163,10 @@
 
             .photo-box {
                 height: 260px;
+            }
+
+            .pdf-modal-content {
+                height: 90vh;
             }
         }
     </style>
@@ -309,11 +384,26 @@
 
             <div class="detail-actions">
 
+
                 <a class="btn btn-secondary"
                    href="${pageContext.request.contextPath}/list">
-
                     Retour a la liste
                 </a>
+
+                <button class="btn btn-primary"
+                        type="button"
+                        data-action="open-pdf">
+                    Apercu des pieces justificatives
+                </button>
+
+                <c:if test="${demande.estVerrouille}">
+                    <button class="btn btn-success"
+                            type="button"
+                            id="btn-lettre-reception"
+                            onclick="window.open('${pageContext.request.contextPath}/api/demandes/${demande.id}/lettre-reception', '_blank')">
+                        Lettre d'accusé de réception (PDF)
+                    </button>
+                </c:if>
 
                 <div class="row-actions">
 
@@ -354,6 +444,24 @@
 
     </div>
 
+</div>
+
+<div class="pdf-modal" id="pdfModal" aria-hidden="true">
+    <div class="pdf-modal-content" role="dialog" aria-modal="true" aria-labelledby="pdfModalTitle">
+        <div class="pdf-modal-header">
+            <span class="pdf-modal-title" id="pdfModalTitle">Apercu des pieces justificatives</span>
+            <button class="pdf-modal-close" type="button" data-action="close-pdf" aria-label="Fermer">&times;</button>
+        </div>
+        <div class="pdf-modal-body" id="pdfModalBody">
+            <iframe
+                class="pdf-frame"
+                id="pdfFrame"
+                src=""
+                title="Apercu des pieces justificatives">
+            </iframe>
+            <div class="pdf-overlay" aria-hidden="true"></div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -418,6 +526,55 @@
 
             };
 
+        }
+
+        var pdfModal = document.getElementById('pdfModal');
+        var pdfFrame = document.getElementById('pdfFrame');
+        var openPdfButton = document.querySelector('[data-action="open-pdf"]');
+        var closePdfButton = document.querySelector('[data-action="close-pdf"]');
+        var pdfModalBody = document.getElementById('pdfModalBody');
+        var pdfUrl = '${pageContext.request.contextPath}/api/demandes/${demande.id}/pieces-jointes/fusion#toolbar=0&navpanes=0';
+
+        function openPdfModal() {
+            if (!pdfModal || !pdfFrame) {
+                return;
+            }
+            pdfFrame.src = pdfUrl;
+            pdfModal.classList.add('is-open');
+            pdfModal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePdfModal() {
+            if (!pdfModal || !pdfFrame) {
+                return;
+            }
+            pdfModal.classList.remove('is-open');
+            pdfModal.setAttribute('aria-hidden', 'true');
+            pdfFrame.src = '';
+            document.body.style.overflow = '';
+        }
+
+        if (openPdfButton) {
+            openPdfButton.addEventListener('click', openPdfModal);
+        }
+
+        if (closePdfButton) {
+            closePdfButton.addEventListener('click', closePdfModal);
+        }
+
+        if (pdfModal) {
+            pdfModal.addEventListener('click', function (event) {
+                if (event.target === pdfModal) {
+                    closePdfModal();
+                }
+            });
+        }
+
+        if (pdfModalBody) {
+            pdfModalBody.addEventListener('contextmenu', function (event) {
+                event.preventDefault();
+            });
         }
 
     })();

@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -27,6 +28,15 @@ import java.util.Set;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.Query;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
+import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import com.google.zxing.WriterException;
 
 @Service
 public class DemandeVisaService {
@@ -50,8 +60,9 @@ public class DemandeVisaService {
     private final HistoriquePasseportVisaRepository historiquePasseportVisaRepository;
     private final VilleRepository villeRepository;
     private final PaysRepository paysRepository;
+	private final QrCodeService qrCodeService;
 
-	@Value("${app.upload.dir:uploads}")
+	@Value("${app.uploads.dir:uploads}")
 	private String uploadBaseDir;
 
 	public DemandeVisaService(
@@ -74,7 +85,8 @@ public class DemandeVisaService {
             CarteResidentRepository carteResidentRepository,
             HistoriquePasseportVisaRepository historiquePasseportVisaRepository,
             VilleRepository villeRepository,
-            PaysRepository paysRepository) {
+            PaysRepository paysRepository,
+			QrCodeService qrCodeService) {
 		this.demandeVisaRepository = demandeVisaRepository;
 		this.etatCivilRepository = etatCivilRepository;
 		this.passeportRepository = passeportRepository;
@@ -95,6 +107,7 @@ public class DemandeVisaService {
         this.historiquePasseportVisaRepository = historiquePasseportVisaRepository;
         this.villeRepository = villeRepository;
         this.paysRepository = paysRepository;
+		this.qrCodeService = qrCodeService;
 	}
 
 	public List<Pays> getAllPays() {
@@ -690,6 +703,40 @@ public class DemandeVisaService {
 		}
 	}
 
+	public byte[] fusionnerPiecesJointes(Long idDemande) {
+		List<Dossier> dossiers = dossierRepository.findByDemandeVisaIdOrderByIdAsc(idDemande);
+		List<Path> fichiers = new ArrayList<>();
+		for (Dossier dossier : dossiers) {
+			if (!dossier.isEstCoche()) {
+				continue;
+			}
+			String path = dossier.getPathFichier();
+			if (path == null || path.isBlank()) {
+				continue;
+			}
+			Path fichier = Paths.get(path);
+			if (Files.exists(fichier) && Files.isRegularFile(fichier)) {
+				fichiers.add(fichier);
+			}
+		}
+
+		if (fichiers.isEmpty()) {
+			throw new IllegalStateException("Aucune piece jointe disponible");
+		}
+
+		try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+			PDFMergerUtility merger = new PDFMergerUtility();
+			merger.setDestinationStream(output);
+			for (Path fichier : fichiers) {
+				merger.addSource(fichier.toFile());
+			}
+			merger.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
+			return output.toByteArray();
+		} catch (IOException ex) {
+			throw new IllegalStateException("Erreur lors de la fusion des PDF", ex);
+		}
+	}
+
 	@Transactional
 	public DemandeVisa verrouillerDemande(Long idDemande) {
 		DemandeVisa demande = demandeVisaRepository.findById(idDemande)
@@ -702,14 +749,25 @@ public class DemandeVisaService {
 		boolean dossierComplet = dossiers.stream()
 				.filter(Dossier::isEstCoche)
 				.allMatch(dossier -> dossier.getPathFichier() != null && !dossier.getPathFichier().isBlank());
-		if (!dossierComplet) {
-			throw new IllegalStateException("Dossier incomplet");
-		}
+		// if (!dossierComplet) {
+		// 	throw new IllegalStateException("Dossier incomplet");
+		// }
 
+		// scan autorisé même si incompletp
+
+		Path photoPath = Paths.get(
+        "uploads",
+        "demande-" + idDemande,
+        "photo-" + idDemande + ".png"
+		);
+
+		if (Files.exists(photoPath)) {
+			demande.setCheminPhoto(photoPath.toString());
+		}
 		demande.setEstVerrouille(true);
 		DemandeVisa savedDemande = demandeVisaRepository.save(demande);
-		TypeStatutDemande statut = typeStatutDemandeRepository.findByRang(2)
-				.orElseThrow(() -> new IllegalStateException("Statut rang 2 introuvable"));
+		TypeStatutDemande statut = typeStatutDemandeRepository.findByRang(5)
+				.orElseThrow(() -> new IllegalStateException("Statut rang 5 (scanne) introuvable"));
 		StatutDemande statutDemande = new StatutDemande();
 		statutDemande.setDemandeVisa(savedDemande);
 		statutDemande.setTypeStatutDemande(statut);
@@ -824,5 +882,309 @@ public class DemandeVisaService {
 		} catch (IOException e) {
 			throw new IllegalStateException("Erreur sauvegarde photo", e);
 		}
+	}
+
+	@Transactional
+	public void mettreAJourStatutMedia(Long idDemande) {
+
+		DemandeVisa demande = demandeVisaRepository.findById(idDemande)
+				.orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+
+		boolean hasPhoto = Files.exists(Paths.get("uploads/demande-" + idDemande + "/photo-" + idDemande + ".png"));
+		boolean hasSignature = demande.getCheminSignature() != null && !demande.getCheminSignature().isBlank();
+
+		int rangStatut;
+
+		if (hasPhoto && hasSignature) {
+			rangStatut = 4; // Signature et photo terminee
+		} else if (hasSignature) {
+			rangStatut = 3; // Signature terminee
+		} else if (hasPhoto) {
+			rangStatut = 2; // Photo terminee
+		} else {
+			return;
+		}
+
+		TypeStatutDemande typeStatut = typeStatutDemandeRepository.findByRang(rangStatut)
+				.orElseThrow(() -> new IllegalStateException("Statut introuvable"));
+
+		StatutDemande statut = new StatutDemande();
+		statut.setDemandeVisa(demande);
+		statut.setTypeStatutDemande(typeStatut);
+		statut.setDateStatut(java.time.LocalDate.now());
+
+		statutDemandeRepository.save(statut);
+	}
+
+	public void verifierAutorisationScan(Long idDemande) {
+
+        DemandeVisa demande = demandeVisaRepository.findById(idDemande)
+                .orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+
+        StatutDemande dernierStatut = statutDemandeRepository
+                .findTopByDemandeVisaIdOrderByIdDesc(idDemande)
+                .orElseThrow(() -> new IllegalStateException("Aucun statut trouvé"));
+
+        boolean autoriseScan = dernierStatut.getTypeStatutDemande().getRang() >= 4;
+
+        if (!autoriseScan) {
+            throw new IllegalStateException("Veuillez d'abord finaliser l'étape de prise de photo et de signature avant de procéder au scan des documents.");
+        }
+    }
+
+	@Transactional
+	public byte[] generateLettreReceptionPdf(Long id, String qrUrlBase) throws IOException, WriterException {
+		DemandeVisa demande = demandeVisaRepository.findById(id)
+				.orElseThrow(() -> new IllegalArgumentException("Demande introuvable"));
+
+		// Validation : lever une exception si le statut de la demande n'est pas au moins SCANNE (rang >= 5)
+		StatutDemande dernierStatut = statutDemandeRepository
+				.findTopByDemandeVisaIdOrderByIdDesc(id)
+				.orElseThrow(() -> new IllegalStateException("Aucun statut trouvé"));
+
+		if (dernierStatut.getTypeStatutDemande().getRang() < 5) {
+			throw new IllegalStateException("Le statut de la demande n'est pas au moins SCANNE (Scan terminé).");
+		}
+
+		PDDocument document = new PDDocument();
+		try {
+			PDPage page = new PDPage(PDRectangle.A4);
+			document.addPage(page);
+
+			PDPageContentStream contentStream = new PDPageContentStream(document, page);
+
+			// Setup colors and typography
+			float pageWidth = PDRectangle.A4.getWidth();
+			float pageHeight = PDRectangle.A4.getHeight();
+
+			// Header/Letterhead
+			drawCenteredText(contentStream, "REPOBLIKAN'I MADAGASCAR", PDType1Font.HELVETICA_BOLD, 12, pageWidth, 800);
+			drawCenteredText(contentStream, "Fitiavana - Tanindrazana - Fandrosoana", PDType1Font.HELVETICA_OBLIQUE, 9, pageWidth, 785);
+			contentStream.setLineWidth(0.5f);
+			contentStream.setStrokingColor(150, 150, 150);
+			contentStream.moveTo(200, 775);
+			contentStream.lineTo(395, 775);
+			contentStream.stroke();
+
+			drawCenteredText(contentStream, "MINISTERE DE L'INTERIEUR", PDType1Font.HELVETICA_BOLD, 10, pageWidth, 755);
+			drawCenteredText(contentStream, "Direction de l'Immigration et de l'Emigration", PDType1Font.HELVETICA, 10, pageWidth, 740);
+
+			// Date of generation
+			java.time.LocalDate localDate = java.time.LocalDate.now();
+			String formattedDate = localDate.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+			drawText(contentStream, "Date: " + formattedDate, PDType1Font.HELVETICA, 10, 50, 710);
+
+			// Title Banner (Slate/Navy Blue)
+			contentStream.setNonStrokingColor(44, 62, 80);
+			contentStream.addRect(50, 665, 495, 30);
+			contentStream.fill();
+
+			// White text on banner
+			contentStream.setNonStrokingColor(255, 255, 255);
+			drawCenteredText(contentStream, "ACCUSE DE RECEPTION - DEMANDE DE VISA", PDType1Font.HELVETICA_BOLD, 12, pageWidth, 675);
+
+			// Reset non-stroking color to dark gray/black for main text
+			contentStream.setNonStrokingColor(30, 30, 30);
+
+			// Get references
+			Passeport passeport = demande.getPasseport();
+			EtatCivil etatCivil = passeport.getEtatCivil();
+
+			// Left details block
+			float startX = 60;
+			float currentY = 620;
+			float lineSpacing = 18;
+
+			// Section 1: Informations de la Demande
+			drawText(contentStream, "INFORMATIONS DE LA DEMANDE", PDType1Font.HELVETICA_BOLD, 11, startX, currentY);
+			contentStream.setStrokingColor(44, 62, 80);
+			contentStream.setLineWidth(1f);
+			contentStream.moveTo(startX, currentY - 3);
+			contentStream.lineTo(startX + 180, currentY - 3);
+			contentStream.stroke();
+
+			currentY -= 20;
+			drawText(contentStream, "Reference Demande : " + demande.getId(), PDType1Font.HELVETICA, 10, startX, currentY);
+			currentY -= lineSpacing;
+			String dateDemandeStr = demande.getDateDemande() != null ? demande.getDateDemande().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
+			drawText(contentStream, "Date de Demande : " + dateDemandeStr, PDType1Font.HELVETICA, 10, startX, currentY);
+			currentY -= lineSpacing;
+			drawText(contentStream, "Type de Demande : " + (demande.getTypeDemandeVisa() != null ? demande.getTypeDemandeVisa().getLabel() : ""), PDType1Font.HELVETICA, 10, startX, currentY);
+			currentY -= lineSpacing;
+			drawText(contentStream, "Type de Visa sollicite : " + (demande.getTypeVisa() != null ? demande.getTypeVisa().getLabel() : ""), PDType1Font.HELVETICA, 10, startX, currentY);
+
+			// Section 2: Etat Civil
+			currentY -= 35;
+			drawText(contentStream, "INFORMATIONS D'ETAT CIVIL", PDType1Font.HELVETICA_BOLD, 11, startX, currentY);
+			contentStream.moveTo(startX, currentY - 3);
+			contentStream.lineTo(startX + 180, currentY - 3);
+			contentStream.stroke();
+
+			currentY -= 20;
+			drawText(contentStream, "Nom : " + (etatCivil.getNom() != null ? etatCivil.getNom() : ""), PDType1Font.HELVETICA, 10, startX, currentY);
+			currentY -= lineSpacing;
+			drawText(contentStream, "Prenom(s) : " + (etatCivil.getPrenom() != null ? etatCivil.getPrenom() : ""), PDType1Font.HELVETICA, 10, startX, currentY);
+			if (etatCivil.getNomJeuneFille() != null && !etatCivil.getNomJeuneFille().isBlank()) {
+				currentY -= lineSpacing;
+				drawText(contentStream, "Nom de jeune fille : " + etatCivil.getNomJeuneFille(), PDType1Font.HELVETICA, 10, startX, currentY);
+			}
+			currentY -= lineSpacing;
+			String dateNaisStr = etatCivil.getDateNaissance() != null ? etatCivil.getDateNaissance().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
+			drawText(contentStream, "Date de Naissance : " + dateNaisStr, PDType1Font.HELVETICA, 10, startX, currentY);
+			currentY -= lineSpacing;
+			drawText(contentStream, "Lieu de Naissance : " + (etatCivil.getLieuNaissance() != null ? etatCivil.getLieuNaissance() : ""), PDType1Font.HELVETICA, 10, startX, currentY);
+			currentY -= lineSpacing;
+			drawText(contentStream, "Nationalite : " + (etatCivil.getNationalite() != null ? etatCivil.getNationalite().getLabel() : ""), PDType1Font.HELVETICA, 10, startX, currentY);
+			currentY -= lineSpacing;
+			drawText(contentStream, "Situation Familiale : " + (etatCivil.getSituationFamiliale() != null ? etatCivil.getSituationFamiliale().getLabel() : ""), PDType1Font.HELVETICA, 10, startX, currentY);
+			currentY -= lineSpacing;
+			drawText(contentStream, "Adresse : " + (etatCivil.getAdresseMada() != null ? etatCivil.getAdresseMada() : ""), PDType1Font.HELVETICA, 10, startX, currentY);
+			currentY -= lineSpacing;
+			drawText(contentStream, "Telephone : " + (etatCivil.getNumTel() != null ? etatCivil.getNumTel() : ""), PDType1Font.HELVETICA, 10, startX, currentY);
+			currentY -= lineSpacing;
+			drawText(contentStream, "Email : " + (etatCivil.getEmail() != null ? etatCivil.getEmail() : ""), PDType1Font.HELVETICA, 10, startX, currentY);
+
+			// Section 3: Passeport
+			currentY -= 35;
+			drawText(contentStream, "INFORMATIONS DU PASSEPORT", PDType1Font.HELVETICA_BOLD, 11, startX, currentY);
+			contentStream.moveTo(startX, currentY - 3);
+			contentStream.lineTo(startX + 180, currentY - 3);
+			contentStream.stroke();
+
+			currentY -= 20;
+			drawText(contentStream, "Numero de Passeport : " + (passeport.getNumPasseport() != null ? passeport.getNumPasseport() : ""), PDType1Font.HELVETICA, 10, startX, currentY);
+			currentY -= lineSpacing;
+			String dateDelivStr = passeport.getDateDelivrance() != null ? passeport.getDateDelivrance().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
+			drawText(contentStream, "Date de Delivrance : " + dateDelivStr, PDType1Font.HELVETICA, 10, startX, currentY);
+			currentY -= lineSpacing;
+			String dateExpStr = passeport.getDateExpiration() != null ? passeport.getDateExpiration().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
+			drawText(contentStream, "Date d'Expiration : " + dateExpStr, PDType1Font.HELVETICA, 10, startX, currentY);
+			currentY -= lineSpacing;
+			drawText(contentStream, "Pays de Delivrance : " + (passeport.getPays() != null ? passeport.getPays().getLabel() : ""), PDType1Font.HELVETICA, 10, startX, currentY);
+
+			// Right photo box
+			float photoX = 430;
+			float photoY = 500;
+			float photoW = 100;
+			float photoH = 133;
+
+			contentStream.setLineWidth(1f);
+			contentStream.setStrokingColor(180, 180, 180);
+			contentStream.addRect(photoX, photoY, photoW, photoH);
+			contentStream.stroke();
+
+			String photoPathStr = demande.getCheminPhoto();
+			boolean photoDrawn = false;
+			if (photoPathStr != null && !photoPathStr.isBlank()) {
+				Path photoPath = Paths.get(photoPathStr);
+				if (Files.exists(photoPath)) {
+					try {
+						PDImageXObject photoImage = PDImageXObject.createFromFile(photoPath.toString(), document);
+						contentStream.drawImage(photoImage, photoX + 1, photoY + 1, photoW - 2, photoH - 2);
+						photoDrawn = true;
+					} catch (Exception e) {
+						// Ignored, fallback to text
+					}
+				}
+			}
+
+			if (!photoDrawn) {
+				drawText(contentStream, "PHOTO", PDType1Font.HELVETICA_BOLD, 10, photoX + 30, photoY + 75);
+				drawText(contentStream, "IDENTITE", PDType1Font.HELVETICA_BOLD, 10, photoX + 25, photoY + 60);
+			}
+
+			// QR Code box (Bottom right)
+			float qrX = 420;
+			float qrY = 100;
+			float qrSize = 110;
+
+			byte[] qrBytes = null;
+			try {
+				qrBytes = qrCodeService.generateQrCode(qrUrlBase + id, 150, 150);
+			} catch (Exception e) {
+				// Ignored
+			}
+
+			if (qrBytes != null) {
+				try {
+					PDImageXObject qrImage = PDImageXObject.createFromByteArray(document, qrBytes, "qrcode");
+					contentStream.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
+				} catch (Exception e) {
+					// Ignored
+				}
+			} else {
+				contentStream.setLineWidth(1f);
+				contentStream.setStrokingColor(180, 180, 180);
+				contentStream.addRect(qrX, qrY, qrSize, qrSize);
+				contentStream.stroke();
+				drawText(contentStream, "QR CODE", PDType1Font.HELVETICA_BOLD, 10, qrX + 30, qrY + 55);
+			}
+
+			// Notice text next to QR Code (Bottom left)
+			float noticeX = 60;
+			float noticeY = 180;
+			drawText(contentStream, "Veuillez conserver precieusement cet accuse de reception.", PDType1Font.HELVETICA_BOLD, 9, noticeX, noticeY);
+			drawText(contentStream, "Vous pouvez scanner le QR Code ci-contre pour suivre en temps reel", PDType1Font.HELVETICA, 9, noticeX, noticeY - 14);
+			drawText(contentStream, "l'avancement du traitement de votre demande de visa.", PDType1Font.HELVETICA, 9, noticeX, noticeY - 28);
+
+			// Signature block (Bottom left-middle)
+			float sigX = 60;
+			float sigY = 110;
+			drawText(contentStream, "Signature du demandeur", PDType1Font.HELVETICA_OBLIQUE, 9, sigX, sigY);
+			contentStream.setLineWidth(0.5f);
+			contentStream.setStrokingColor(180, 180, 180);
+			contentStream.addRect(sigX, sigY - 70, 180, 60);
+			contentStream.stroke();
+
+			String sigPathStr = demande.getCheminSignature();
+			if (sigPathStr != null && !sigPathStr.isBlank()) {
+				Path sigPath = Paths.get(sigPathStr);
+				if (Files.exists(sigPath)) {
+					try {
+						PDImageXObject sigImage = PDImageXObject.createFromFile(sigPath.toString(), document);
+						contentStream.drawImage(sigImage, sigX + 2, sigY - 68, 176, 56);
+					} catch (Exception e) {
+						// Ignored, fallback to empty box
+					}
+				}
+			}
+
+			contentStream.close();
+
+			ByteArrayOutputStream output = new ByteArrayOutputStream();
+			document.save(output);
+			return output.toByteArray();
+		} finally {
+			document.close();
+		}
+	}
+
+	private String stripAccents(String text) {
+		if (text == null) return "";
+		return java.text.Normalizer.normalize(text, java.text.Normalizer.Form.NFD)
+				.replaceAll("\\p{M}", "")
+				.replace("æ", "ae")
+				.replace("Œ", "OE")
+				.replace("œ", "oe");
+	}
+
+	private void drawCenteredText(PDPageContentStream contentStream, String text, PDType1Font font, float fontSize, float pageWidth, float y) throws IOException {
+		String cleanText = stripAccents(text);
+		float titleWidth = font.getStringWidth(cleanText) / 1000 * fontSize;
+		float x = (pageWidth - titleWidth) / 2;
+		contentStream.beginText();
+		contentStream.setFont(font, fontSize);
+		contentStream.newLineAtOffset(x, y);
+		contentStream.showText(cleanText);
+		contentStream.endText();
+	}
+
+	private void drawText(PDPageContentStream contentStream, String text, PDType1Font font, float fontSize, float x, float y) throws IOException {
+		String cleanText = stripAccents(text);
+		contentStream.beginText();
+		contentStream.setFont(font, fontSize);
+		contentStream.newLineAtOffset(x, y);
+		contentStream.showText(cleanText);
+		contentStream.endText();
 	}
 }

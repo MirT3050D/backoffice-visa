@@ -20,4 +20,8 @@ public interface StatutDemandeRepository extends JpaRepository<StatutDemande, Lo
 	@Modifying
 	@Query("delete from StatutDemande s where s.demandeVisa.id = :demandeVisaId")
 	void deleteByDemandeVisaId(@Param("demandeVisaId") Long demandeVisaId);
+
+	Optional<StatutDemande> findTopByDemandeVisaIdOrderByIdDesc(Long demandeVisaId);
+
+	Optional<StatutDemande> findTopByDemandeVisaIdOrderByDateStatutDesc(Long demandeVisaId);
 }

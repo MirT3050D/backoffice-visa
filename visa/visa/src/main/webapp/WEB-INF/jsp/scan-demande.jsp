@@ -181,7 +181,7 @@
                 </form>
 
                 <form method="post" action="${pageContext.request.contextPath}/demande/${demande.id}/verrouiller" style="margin-top: 1.5rem;">
-                    <button class="btn btn-primary" type="submit" onclick="return confirm('Verrouiller la demande ?');" ${!isComplet || demande.estVerrouille ? 'disabled' : ''}>Finaliser le scan</button>
+                    <button class="btn btn-primary" type="submit" onclick="return confirm('Verrouiller la demande ?');" ${demande.estVerrouille ? 'disabled' : ''}>Finaliser le scan</button>
                     <a class="btn btn-secondary" href="${pageContext.request.contextPath}/list">Retour a la liste</a>
                 </form>
             </main>
