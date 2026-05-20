@@ -425,8 +425,8 @@ Après avoir géré la saisie, les pièces jointes (scan terminé) et la prise d
 **Branche :** `sprint/6/feature/justificatifs-preview-fullstack`
 
 ### 1. Configuration Commune
-- [ ] Ajouter les dépendances de génération et de traitement PDF dans le `pom.xml` (ex: `openpdf` ou `itext7` pour le moteur de base, `pdfbox` pour la fusion de fichiers PDF).
-- [ ] Configurer les répertoires et utilitaires d'accès aux fichiers physiques uploadés des justificatifs.
+- [x] Ajouter les dépendances de génération et de traitement PDF dans le `pom.xml` (ex: `openpdf` ou `itext7` pour le moteur de base, `pdfbox` pour la fusion de fichiers PDF).
+- [x] Configurer les répertoires et utilitaires d'accès aux fichiers physiques uploadés des justificatifs.
 
 ### 2. Fonctionnalité : Service de Fusion & API (Back-end)
 - [ ] Implémenter le service récupérant tous les fichiers physiques/PDF associés aux pièces jointes de la demande (`dossier` où `est_coche = true` et `path_fichier` non nul).

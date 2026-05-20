@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -27,6 +28,8 @@ import java.util.Set;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.Query;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
+import org.apache.pdfbox.io.MemoryUsageSetting;
 
 @Service
 public class DemandeVisaService {
@@ -51,7 +54,7 @@ public class DemandeVisaService {
     private final VilleRepository villeRepository;
     private final PaysRepository paysRepository;
 
-	@Value("${app.upload.dir:uploads}")
+	@Value("${app.uploads.dir:uploads}")
 	private String uploadBaseDir;
 
 	public DemandeVisaService(
@@ -687,6 +690,40 @@ public class DemandeVisaService {
 			return dossierRepository.save(dossier);
 		} catch (IOException ex) {
 			throw new IllegalStateException("Erreur lors de l'upload", ex);
+		}
+	}
+
+	public byte[] fusionnerPiecesJointes(Long idDemande) {
+		List<Dossier> dossiers = dossierRepository.findByDemandeVisaIdOrderByIdAsc(idDemande);
+		List<Path> fichiers = new ArrayList<>();
+		for (Dossier dossier : dossiers) {
+			if (!dossier.isEstCoche()) {
+				continue;
+			}
+			String path = dossier.getPathFichier();
+			if (path == null || path.isBlank()) {
+				continue;
+			}
+			Path fichier = Paths.get(path);
+			if (Files.exists(fichier) && Files.isRegularFile(fichier)) {
+				fichiers.add(fichier);
+			}
+		}
+
+		if (fichiers.isEmpty()) {
+			throw new IllegalStateException("Aucune piece jointe disponible");
+		}
+
+		try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+			PDFMergerUtility merger = new PDFMergerUtility();
+			merger.setDestinationStream(output);
+			for (Path fichier : fichiers) {
+				merger.addSource(fichier.toFile());
+			}
+			merger.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
+			return output.toByteArray();
+		} catch (IOException ex) {
+			throw new IllegalStateException("Erreur lors de la fusion des PDF", ex);
 		}
 	}
 
