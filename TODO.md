@@ -440,11 +440,11 @@ Après avoir géré la saisie, les pièces jointes (scan terminé) et la prise d
 ### 3. Fonctionnalité : Intégration IHM & Sécurisation (Front-end)
 - [x] Sur la page fiche de la demande (`detail.jsp` ou page Vue), ajouter le bouton "Aperçu des pièces justificatives" en bas de page.
 - [x] S'assurer que le bouton est toujours visible et accessible pour la demande (toujours disponible).
-- [ ] Au clic sur le bouton, ouvrir un composant/modal d'affichage (iframe ou visionneuse PDF).
-- [ ] **Empêcher le téléchargement et la copie du document (Non Téléchargeable)** :
-  - [ ] Ajouter les paramètres de désactivation de la barre d'outils native à l'URL de l'iframe : `src="/api/demandes/{id}/pieces-jointes/fusion#toolbar=0&navpanes=0&scrollbar=0"`.
-  - [ ] Ajouter un écouteur JavaScript pour interdire le clic droit (`contextmenu`) sur le conteneur d'aperçu.
-  - [ ] Appliquer des styles CSS (ex: superposition d'une div transparente ou `pointer-events: none` sélectif) pour empêcher le drag-and-drop ou le clic droit direct d'enregistrement.
+- [x] Au clic sur le bouton, ouvrir un composant/modal d'affichage (iframe ou visionneuse PDF).
+- [x] **Empêcher le téléchargement et la copie du document (Non Téléchargeable)** :
+  - [x] Ajouter les paramètres de désactivation de la barre d'outils native à l'URL de l'iframe : `src="/api/demandes/{id}/pieces-jointes/fusion#toolbar=0&navpanes=0&scrollbar=0"`.
+  - [x] Ajouter un écouteur JavaScript pour interdire le clic droit (`contextmenu`) sur le conteneur d'aperçu.
+  - [x] Appliquer des styles CSS (ex: superposition d'une div transparente ou `pointer-events: none` sélectif) pour empêcher le drag-and-drop ou le clic droit direct d'enregistrement.
 
 ---
 
