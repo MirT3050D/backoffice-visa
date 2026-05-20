@@ -431,11 +431,11 @@ Après avoir géré la saisie, les pièces jointes (scan terminé) et la prise d
 - [x] Configurer les répertoires et utilitaires d'accès aux fichiers physiques uploadés des justificatifs.
 
 ### 2. Fonctionnalité : Service de Fusion & API (Back-end)
-- [ ] Implémenter le service récupérant tous les fichiers physiques/PDF associés aux pièces jointes de la demande (`dossier` où `est_coche = true` et `path_fichier` non nul).
-- [ ] Ordonner ces justificatifs selon leur ordre d'insertion en base de données.
-- [ ] Fusionner l'ensemble des fichiers PDF en un unique flux PDF.
-- [ ] Créer l'endpoint `GET /api/demandes/{id}/pieces-jointes/fusion` (accessible à tout moment pour la demande).
-- [ ] Configurer les en-têtes HTTP de la réponse avec `Content-Disposition: inline; filename="justificatifs.pdf"` pour forcer l'affichage dans le navigateur et non le téléchargement automatique.
+- [x] Implémenter le service récupérant tous les fichiers physiques/PDF associés aux pièces jointes de la demande (`dossier` où `est_coche = true` et `path_fichier` non nul).
+- [x] Ordonner ces justificatifs selon leur ordre d'insertion en base de données.
+- [x] Fusionner l'ensemble des fichiers PDF en un unique flux PDF.
+- [x] Créer l'endpoint `GET /api/demandes/{id}/pieces-jointes/fusion` (accessible à tout moment pour la demande).
+- [x] Configurer les en-têtes HTTP de la réponse avec `Content-Disposition: inline; filename="justificatifs.pdf"` pour forcer l'affichage dans le navigateur et non le téléchargement automatique.
 
 ### 3. Fonctionnalité : Intégration IHM & Sécurisation (Front-end)
 - [ ] Sur la page fiche de la demande (`detail.jsp` ou page Vue), ajouter le bouton "Aperçu des pièces justificatives" en bas de page.
