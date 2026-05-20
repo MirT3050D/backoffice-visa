@@ -704,36 +704,150 @@ public class DemandeVisaService {
 	}
 
 	public byte[] fusionnerPiecesJointes(Long idDemande) {
-		List<Dossier> dossiers = dossierRepository.findByDemandeVisaIdOrderByIdAsc(idDemande);
+
+		List<Dossier> dossiers =
+			dossierRepository.findByDemandeVisaIdOrderByIdAsc(idDemande);
+
 		List<Path> fichiers = new ArrayList<>();
+
 		for (Dossier dossier : dossiers) {
+
 			if (!dossier.isEstCoche()) {
 				continue;
 			}
+
 			String path = dossier.getPathFichier();
+
 			if (path == null || path.isBlank()) {
 				continue;
 			}
+
 			Path fichier = Paths.get(path);
-			if (Files.exists(fichier) && Files.isRegularFile(fichier)) {
+
+			if (
+				Files.exists(fichier)
+				&& Files.isRegularFile(fichier)
+			) {
 				fichiers.add(fichier);
 			}
 		}
 
 		if (fichiers.isEmpty()) {
-			throw new IllegalStateException("Aucune piece jointe disponible");
+			throw new IllegalStateException(
+				"Aucune piece jointe disponible"
+			);
 		}
 
-		try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-			PDFMergerUtility merger = new PDFMergerUtility();
-			merger.setDestinationStream(output);
+		try (
+			PDDocument document = new PDDocument();
+			ByteArrayOutputStream output =
+				new ByteArrayOutputStream()
+		) {
+
 			for (Path fichier : fichiers) {
-				merger.addSource(fichier.toFile());
+
+				String nom =
+					fichier.getFileName()
+						.toString()
+						.toLowerCase();
+
+				// =========================
+				// PDF
+				// =========================
+				if (nom.endsWith(".pdf")) {
+
+					try (
+						PDDocument pdf =
+							PDDocument.load(
+								fichier.toFile()
+							);
+					) {
+
+						for (PDPage page : pdf.getPages()) {
+							document.importPage(page);
+						}
+					}
+				}
+
+				// =========================
+				// Images
+				// =========================
+				else if (
+					nom.endsWith(".png")
+					|| nom.endsWith(".jpg")
+					|| nom.endsWith(".jpeg")
+				) {
+
+					PDPage page =
+						new PDPage(PDRectangle.A4);
+
+					document.addPage(page);
+
+					PDImageXObject image =
+						PDImageXObject.createFromFile(
+							fichier.toString(),
+							document
+						);
+
+					float pageWidth =
+						page.getMediaBox().getWidth();
+
+					float pageHeight =
+						page.getMediaBox().getHeight();
+
+					float imageWidth =
+						image.getWidth();
+
+					float imageHeight =
+						image.getHeight();
+
+					float scale =
+						Math.min(
+							pageWidth / imageWidth,
+							pageHeight / imageHeight
+						);
+
+					float drawWidth =
+						imageWidth * scale;
+
+					float drawHeight =
+						imageHeight * scale;
+
+					float x =
+						(pageWidth - drawWidth) / 2;
+
+					float y =
+						(pageHeight - drawHeight) / 2;
+
+					try (
+						PDPageContentStream content =
+							new PDPageContentStream(
+								document,
+								page
+							)
+					) {
+
+						content.drawImage(
+							image,
+							x,
+							y,
+							drawWidth,
+							drawHeight
+						);
+					}
+				}
 			}
-			merger.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
+
+			document.save(output);
+
 			return output.toByteArray();
+
 		} catch (IOException ex) {
-			throw new IllegalStateException("Erreur lors de la fusion des PDF", ex);
+
+			throw new IllegalStateException(
+				"Erreur lors de la fusion des fichiers",
+				ex
+			);
 		}
 	}
 
